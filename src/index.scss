@@ -48,8 +48,6 @@ body {
 	line-height: 32px;
 	text-align: center;
 	color: var(--main-white-color);
-	position: absolute;
-	bottom: 30px;
 	&:hover {
 		box-shadow: 7px -7px 17px var(--dark-red-color);
 		border: none;
@@ -57,4 +55,7 @@ body {
 }
 .btn-295 {
 	width: 295px;
+	position: absolute;
+	bottom: 30px;
+
 }

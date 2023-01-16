@@ -1,0 +1,62 @@
+[debug] [2023-01-16T17:55:18.655Z] ----------------------------------------------------------------------
+[debug] [2023-01-16T17:55:18.656Z] Command:       /usr/local/bin/node /home/user/Документы/projects/happygram/node_modules/.bin/firebase init hosting:github
+[debug] [2023-01-16T17:55:18.657Z] CLI Version:   11.20.0
+[debug] [2023-01-16T17:55:18.657Z] Platform:      linux
+[debug] [2023-01-16T17:55:18.657Z] Node Version:  v18.12.1
+[debug] [2023-01-16T17:55:18.660Z] Time:          Mon Jan 16 2023 19:55:18 GMT+0200 (Восточная Европа, стандартное время)
+[debug] [2023-01-16T17:55:18.661Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-01-16T17:55:18.712Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-01-16T17:55:18.713Z] > authorizing via signed-in user (sivtsovatanya1985@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/user/Документы/projects/happygram
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2023-01-16T17:55:18.716Z] Using project from CLI flag: happygran-b33fc
+[debug] [2023-01-16T17:55:18.718Z] > refreshing access token with scopes: []
+[debug] [2023-01-16T17:55:18.719Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2023-01-16T17:55:18.720Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-01-16T17:55:19.132Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2023-01-16T17:55:19.132Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-01-16T17:55:19.165Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/happygran-b33fc [none]
+[debug] [2023-01-16T17:55:20.070Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/happygran-b33fc 200
+[debug] [2023-01-16T17:55:20.070Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/happygran-b33fc {"projectId":"happygran-b33fc","projectNumber":"174567403326","displayName":"happygran","name":"projects/happygran-b33fc","resources":{"hostingSite":"happygran-b33fc"},"state":"ACTIVE","etag":"1_9f667b6b-3019-40d5-b3a9-6f7a4081d39b"}
+[info] i  Using project happygran-b33fc (happygran) 
+[info] 
+=== Hosting:github Setup
+[info] 
+[info] i  Detected a .git folder at /home/user/Документы/projects/happygram 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=792926639&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
+[debug] [2023-01-16T17:55:20.855Z] >>> [apiv2][query] POST https://github.com/login/oauth/access_token [none]
+[debug] [2023-01-16T17:55:20.856Z] >>> [apiv2][body] POST https://github.com/login/oauth/access_token [stream]
+[debug] [2023-01-16T17:55:21.464Z] <<< [apiv2][status] POST https://github.com/login/oauth/access_token 200
+[debug] [2023-01-16T17:55:21.464Z] <<< [apiv2][body] POST https://github.com/login/oauth/access_token {"access_token":"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","token_type":"bearer","scope":"read:user,repo"}
+[debug] [2023-01-16T17:55:21.470Z] >>> [apiv2][query] GET https://api.github.com/user [none]
+[debug] [2023-01-16T17:55:21.909Z] <<< [apiv2][status] GET https://api.github.com/user 200
+[debug] [2023-01-16T17:55:21.910Z] <<< [apiv2][body] GET https://api.github.com/user {"login":"SivtsovaT","id":66840978,"node_id":"MDQ6VXNlcjY2ODQwOTc4","avatar_url":"https://avatars.githubusercontent.com/u/66840978?v=4","gravatar_id":"","url":"https://api.github.com/users/SivtsovaT","html_url":"https://github.com/SivtsovaT","followers_url":"https://api.github.com/users/SivtsovaT/followers","following_url":"https://api.github.com/users/SivtsovaT/following{/other_user}","gists_url":"https://api.github.com/users/SivtsovaT/gists{/gist_id}","starred_url":"https://api.github.com/users/SivtsovaT/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/SivtsovaT/subscriptions","organizations_url":"https://api.github.com/users/SivtsovaT/orgs","repos_url":"https://api.github.com/users/SivtsovaT/repos","events_url":"https://api.github.com/users/SivtsovaT/events{/privacy}","received_events_url":"https://api.github.com/users/SivtsovaT/received_events","type":"User","site_admin":false,"name":null,"company":null,"blog":"","location":null,"email":null,"hireable":null,"bio":null,"twitter_username":null,"public_repos":33,"public_gists":0,"followers":0,"following":0,"created_at":"2020-06-12T16:30:22Z","updated_at":"2022-09-07T11:21:58Z","private_gists":0,"total_private_repos":14,"owned_private_repos":14,"disk_usage":125402,"collaborators":1,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}
+[info] 
+[info] ✔  Success! Logged into GitHub as SivtsovaT 
+[info] 
