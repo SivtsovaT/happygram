@@ -11,6 +11,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ SHA256:btZMGhoeRFBCJnXlTz16wicox9peBGQd9rJtLLv8UNI }}'
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HAPPYGRAN_B33FC }}'
           projectId: happygran-b33fc
