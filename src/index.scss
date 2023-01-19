@@ -4,6 +4,7 @@
 	--main-red-color: #E94040;
 	--dark-red-color: #af532d;
 	--main-white-color: #ffff;
+	--main-green-color: #86cc18;
 }
 body {
 	margin: 0 auto;
@@ -57,5 +58,54 @@ body {
 	width: 295px;
 	position: absolute;
 	bottom: 30px;
+}
 
+.input-log {
+	width: 285px;
+	border-radius: 100px;
+	border: 1px var(--main-grey-color) solid;
+	background: lightgoldenrodyellow;
+	color: var(--main-font-color);
+	font-weight: 900;
+	padding-left: 15px;
+}
+.input-log:focus-visible{
+	border: 3px solid var(--main-element-color);
+	border: 3px solid var(--main-green-color);
+	outline: none;
+}
+
+.width-295 {
+	width: 295px;
+}
+
+.height-67 {
+	height: 67px;
+}
+
+.height-58 {
+	height: 58px;
+}
+.link-panel {
+	width: 30px;
+	height: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-decoration: none;
+	border: 2px green solid;
+	border-radius: 10px;
+	margin-top: 30px;
+	margin-left: -325px;
+	margin-bottom: 30px;
+}
+.password-wrapper {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: baseline;
+}
+.password-image {
+	display: flex;
+	margin-left: -50px;
+	margin-top: 10px;
 }

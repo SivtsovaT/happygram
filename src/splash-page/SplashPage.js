@@ -11,13 +11,17 @@ const SplashPage = () => {
 		}, 2000);
 	}
 	showContinueButton();
+
+	const showNextPage = () => {
+		window.location.replace("/signup");
+	}
 	return (
 		<div className="content">
 			<img className="logo-image" src={logo} alt="logo"/>
 			<h1 className="project-header">HAPPYGRAM</h1>
 			<div className="project-main">Welcome to the project</div>
 			{
-				buttonVisible && <button className="btn btn-295">CONTINUE</button>
+				buttonVisible && <button onClick={showNextPage} className="btn btn-295">CONTINUE</button>
 			}
 		</div>
 	)
