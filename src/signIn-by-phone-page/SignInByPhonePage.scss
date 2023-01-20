@@ -1,0 +1,40 @@
+.enter-phone {
+	margin-top: 50px;
+	margin-bottom: 30px;
+}
+.otp-header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: var(--main-font-color);
+	margin-top: 30px;
+	margin-bottom: 48px;
+	.otp-title {
+		font-weight: 700;
+		font-size: 34px;
+		margin-bottom: 12px;
+		display: flex;
+		justify-content: center;
+		.otp-value {
+			margin-right: 5px;
+		}
+	}
+	.descr {
+		font-weight: 400;
+		font-size: 18px;
+	}
+}
+
+.otp-input-wrapper {
+	display: flex;
+	justify-content: center;
+	margin-top: 70px;
+}
+
+.send-again {
+	display: flex;
+	justify-content: center;
+	color: var(--main-red-color);
+	margin-top: 400px;
+}

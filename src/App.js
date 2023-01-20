@@ -4,6 +4,8 @@ import {Route, Routes} from "react-router-dom";
 import SplashPage from "./splash-page/SplashPage";
 import SignUpPage from "./signup-page/SignUpPage";
 import SignInPage from "./signin-page/SignInPage";
+import SignInByPhonePage from "./signIn-by-phone-page/SignInByPhonePage";
+import HomePage from "./home-page/HomePage";
 const App = () => {
   return (
       <>
@@ -11,6 +13,8 @@ const App = () => {
               <Route path="/" element={<SplashPage/>}/>
               <Route path="signup" element={<SignUpPage/>}/>
               <Route path="signin" element={<SignInPage/>}/>
+              <Route path="phone" element={<SignInByPhonePage/>}/>
+              <Route path="home" element={<HomePage/>}/>
           </Routes>
       </>
   )

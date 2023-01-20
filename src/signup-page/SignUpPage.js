@@ -7,6 +7,8 @@ import { doc, setDoc} from "firebase/firestore";
 import {Link} from "react-router-dom";
 import back from "../images/back.png";
 import hide from "../images/hide.png";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPhone} from "@fortawesome/free-solid-svg-icons/faPhone";
 const SignUpPage = () => {
 	const [passwordShown, setPasswordShown] = useState(false);
 	const [name, setName] = useState('');
@@ -17,6 +19,10 @@ const SignUpPage = () => {
 	const togglePassword = () => {
 		setPasswordShown(!passwordShown);
 	};
+	const showPhonePage = () => {
+		window.location.replace("/phone");
+	}
+
 	const handleSignup = async (event) => {
 		event.preventDefault();
 		if (name.length === 0) {
@@ -80,7 +86,12 @@ const SignUpPage = () => {
 							</div>
 						</div>
 					</div>
-				</div>
+				<button onClick={showPhonePage} className="phone-btn">
+					<div>Sign Up by phone</div>
+					<FontAwesomeIcon icon={faPhone} />
+				</button>
+
+			</div>
 			<button onClick={handleSignup} className="btn btn-295">Sign up</button>
 		</div>
 	)
