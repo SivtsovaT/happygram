@@ -36,7 +36,7 @@ const SignUpPage = () => {
 	}
 	return (
 		<div className="content">
-			<Link to="/" className="link-panel">
+			<Link to="/signin" className="link-panel">
 					<img src={back} alt="back"/>
 			</Link>
 			<div className="signup-wrapper">
@@ -56,7 +56,7 @@ const SignUpPage = () => {
 							   onChange={(event) => setEmail(event.target.value)}
 							   value={email}
 						/>
-						<div onClick={togglePassword} className='password-wrapper'>
+						<div  className='password-wrapper'>
 							<input className="input-log height-58"
 								   name="password"
 								   type={passwordShown ? "text" : "password"}
@@ -65,10 +65,10 @@ const SignUpPage = () => {
 								   onChange={(event) => setPassword(event.target.value)}
 							/>
 							<div className='password-image'>
-								<img  src={hide} alt='hide'/>
+								<img onClick={togglePassword} src={hide} alt='hide'/>
 							</div>
 						</div>
-						<div onClick={togglePassword} className='password-wrapper'>
+						<div  className='password-wrapper'>
 							<input className="input-log height-58"
 								   type={passwordShown ? "text" : "password"}
 								   placeholder=" Confirm password"
@@ -76,17 +76,11 @@ const SignUpPage = () => {
 								   onChange={(e) => setConfirmPassword(e.target.value)}
 							/>
 							<div className='password-image'>
-								<img  src={hide} alt='hide'/>
+								<img onClick={togglePassword} src={hide} alt='hide'/>
 							</div>
 						</div>
 					</div>
 				</div>
-			<div className="have-account-signup-block">
-				<div className="have-account-title">Don’t have an account?</div>
-				<Link className="link" to="/signup">
-					<div className="have-account-signup">Sign up</div>
-				</Link>
-			</div>
 			<button onClick={handleSignup} className="btn btn-295">Sign up</button>
 		</div>
 	)

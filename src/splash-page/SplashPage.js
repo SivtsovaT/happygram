@@ -13,7 +13,7 @@ const SplashPage = () => {
 	showContinueButton();
 
 	const showNextPage = () => {
-		window.location.replace("/signup");
+		window.location.replace("/signin");
 	}
 	return (
 		<div className="content">
