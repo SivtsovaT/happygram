@@ -1,0 +1,57 @@
+.signup-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	.signup-header {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		margin-right: 75px;
+		padding-left: 42px;
+		margin-top: 51px;
+		margin-bottom: 36px;
+		.title {
+			font-family: Montserrat-Black;
+			font-weight: 800;
+			font-size: 36px;
+			margin-bottom: 12px;
+		}
+	}
+	.input-signup-wrapper {
+		display: flex;
+		align-items: flex-start;
+		flex-direction: column;
+		margin-top: 24px;
+		margin-bottom: 20px;
+		input {
+			margin-bottom: 27px;
+		}
+		button {
+			text-transform: uppercase;
+			font-weight: 900;
+			font-size: 15px;
+			width: 305px;
+		}
+	}
+}
+.have-account-signup-block {
+	display: flex;
+	flex-direction: row;
+	font-size: 15px;
+	font-weight: 900;
+	margin-top: 53px;
+	.have-account-title {
+		font-weight: 400;
+		color: var(--main-grey-color);
+		margin-right: 5px;
+	}
+	.link {
+		text-decoration: none;
+	}
+	.have-account-signup {
+		font-weight: 700;
+		color: var(--main-red-color);
+		text-decoration: none;
+	}
+}
+
