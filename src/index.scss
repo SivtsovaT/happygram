@@ -60,6 +60,29 @@ body {
 	bottom: 30px;
 }
 
+.phone-btn {
+	display: flex;
+	justify-content: space-evenly;
+	align-items: center;
+	height: 40px;
+	width: 150px;
+	border-radius: 100px;
+	font-family: "Roboto Thin";
+	background-color: lightgoldenrodyellow;
+	color: var(--main-font-color);
+	border: none;
+	cursor: pointer;
+	transition: 0.5s all;
+	font-size: 14px;
+	font-weight: 900;
+	&:hover {
+		box-shadow: 7px -7px 17px var(--main-red-color);
+		border: none;
+	}
+
+
+}
+
 .input-log {
 	width: 285px;
 	border-radius: 100px;

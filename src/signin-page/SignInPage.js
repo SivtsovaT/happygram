@@ -4,6 +4,8 @@ import {Link} from "react-router-dom";
 import {signInWithEmailAndPassword,} from "firebase/auth";
 import {auth} from "../firebase";
 import hide from "../images/hide.png";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPhone} from "@fortawesome/free-solid-svg-icons/faPhone";
 
 const SignInPage = () => {
 	const [passwordShown, setPasswordShown] = useState(false);
@@ -13,6 +15,10 @@ const SignInPage = () => {
 	const togglePassword = () => {
 		setPasswordShown(!passwordShown);
 	};
+
+	const showPhonePage = () => {
+		window.location.replace("/phone");
+	}
 
 	const login = async () => {
 		try {
@@ -61,6 +67,11 @@ const SignInPage = () => {
 				</Link>
 			</div>
 			<button onClick={login} className="btn btn-295">Log In</button>
+			<div className="project-main or-login">OR</div>
+			<button onClick={showPhonePage} className="phone-btn">
+				<div>Sign Up by phone</div>
+				<FontAwesomeIcon icon={faPhone} />
+			</button>
 
 		</div>
 	)
