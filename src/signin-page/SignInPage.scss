@@ -5,8 +5,8 @@
 	font-weight: 900;
 	margin-top: 53px;
 	.have-account-title {
-		font-weight: 400;
-		color: var(--main-grey-color);
+		font-weight: 700;
+		color: var(--main-font-color);
 		margin-right: 5px;
 	}
 	.link {
@@ -21,4 +21,20 @@
 .or-login {
 	margin-top: 15px;
 	margin-bottom: 10px;
+}
+
+.forgot-pass-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	.forgot-pass {
+		font-style: normal;
+		font-weight: 700;
+		font-size: 13px;
+		line-height: 20px;
+		color: var(--main-font-color);
+		text-decoration: none;
+		margin-top: 20px;
+		margin-bottom: 29px;
+	}
 }
