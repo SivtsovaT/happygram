@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import "./SearchPage.scss";
+import "./MyContactsPage.scss";
 import {getAuth} from "firebase/auth";
 import {db} from "../firebase";
 import {doc, collection, getDocs, query, setDoc, getDoc} from "firebase/firestore";
@@ -9,13 +9,18 @@ import logo from "../images/logo.png";
 import {faRightFromBracket} from "@fortawesome/free-solid-svg-icons/faRightFromBracket";
 import avatar from "../images/search-page/avatar.jpg";
 import {faUserPlus} from "@fortawesome/free-solid-svg-icons/faUserPlus";
+import {Link} from "react-router-dom";
+import back from "../images/back.png";
 
-const SearchPage = () => {
+
+const MyContactsPage = () => {
 	const [users, setUsers] = useState([]);
 	const [searchValue, setSearchValue] = useState('');
-	const [filteredUsers, setFilteredUsers] = useState([]);
 	const [currentAuth, setCurrentAuth] = useState(null);
 	const [userData, setUserData] = useState([]);
+	const [contacts, setContacts] = useState([]);
+	const [filteredContacts, setFilteredContacts] = useState([]);
+
 
 	const getAuthUser = async () => {
 		try {
@@ -31,6 +36,7 @@ const SearchPage = () => {
 			console.log(e)
 		}
 	};
+
 	useEffect(() => {
 		if (!currentAuth) {
 			return;
@@ -51,42 +57,35 @@ const SearchPage = () => {
 		auth();
 	}, []);
 
-	const myName = userData.displayName;
-
 	useEffect(() => {
-		const getUsers = async () => {
-			const q = query(collection(db, "users"));
-			const querySnapshot = await getDocs(q);
-			querySnapshot.forEach((doc) => {
-				setUsers(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-			});
+		if (!currentAuth) {
+			return;
+		}
+		const getContacts = async () => {
+			const data = await getDocs(collection(db, `users/${currentAuth}/dialogs`));
+			setContacts(data.docs.map((doc) => ({...doc.data(), id: doc.id})));
 		};
-
-		getUsers();
-	}, []);
+		getContacts();
+	}, [currentAuth]);
 
 	useEffect(() => {
-		setFilteredUsers(
-			users.filter(
-				(user) =>
-					user.displayName.toLowerCase().includes(searchValue.toLowerCase())
+		setFilteredContacts(
+			contacts.filter(
+				(contact) =>
+					contact.contactName.toLowerCase().includes(searchValue.toLowerCase())
 			)
 		);
-	}, [searchValue, users]);
+	}, [searchValue, contacts]);
 
-	const addUserToContacts = async (id, displayName, email) => {
-		const dialogId = id;
-		const contactRef = doc(db, `users/${currentAuth}/dialogs/${dialogId}`);
-		await setDoc(contactRef, {
-			contactName: displayName,
-			contactEmail: email
-		}, {merge: true});
-	}
 
-	const showNextPage = (event) => {
+
+	const showPreviousPage = (event) => {
 		event.preventDefault();
-		window.location.replace("contacts");
+		window.location.replace("search");
 	}
+
+
+
 
 	return (
 		<div className="content">
@@ -108,36 +107,24 @@ const SearchPage = () => {
 			</div>
 			<div className="users-list">
 				{
-					filteredUsers.map(filteredUser => {
+					filteredContacts.map(contact => {
 						return (
-							<div key={filteredUser.id} className="user-wrapper">
+							<div key={contact.id} className="user-wrapper">
 								<img className="user-avatar" src={avatar} alt="avatar"/>
 								<div className="user-info">
-									<div className="project-main">{filteredUser.displayName}</div>
-									<div className="user-email">{filteredUser.email}</div>
+									<div className="project-main">{contact.contactName}</div>
+									<div className="user-email">{contact.contactEmail}</div>
 								</div>
-								{
-									filteredUser.displayName == myName ? <div className="project-main">(you)</div>
-										: <button className="btn btn-28"
-												  style={{marginLeft: "80px"}}
-												  onClick={() => addUserToContacts(
-													  filteredUser.id,
-													  filteredUser.displayName,
-													  filteredUser.email
-												  )}
-										>
-											<FontAwesomeIcon icon={faUserPlus}/>
-										</button>
-								}
+
 							</div>
 						)
 					})
 				}
 			</div>
-			<img className="logo-image search-image" src={logo} alt="logo"/>
-			<button onClick={showNextPage} className="btn btn-295">CONTINUE</button>
+			<button onClick={showPreviousPage} className="btn btn-295">CONTINUE</button>
+
 		</div>
 	)
 }
 
-export default SearchPage;
+export default MyContactsPage;
