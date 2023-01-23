@@ -5,7 +5,8 @@ import SplashPage from "./splash-page/SplashPage";
 import SignUpPage from "./signup-page/SignUpPage";
 import SignInPage from "./signin-page/SignInPage";
 import SignInByPhonePage from "./signIn-by-phone-page/SignInByPhonePage";
-import HomePage from "./home-page/HomePage";
+import SearchPage from "./search-page/SearchPage";
+import ResetPasswordPage from "./reset-password-page/ResetPasswordPage";
 const App = () => {
   return (
       <>
@@ -14,7 +15,8 @@ const App = () => {
               <Route path="signup" element={<SignUpPage/>}/>
               <Route path="signin" element={<SignInPage/>}/>
               <Route path="phone" element={<SignInByPhonePage/>}/>
-              <Route path="home" element={<HomePage/>}/>
+              <Route path="search" element={<SearchPage/>}/>
+              <Route path="reset" element={<ResetPasswordPage/>}/>
           </Routes>
       </>
   )

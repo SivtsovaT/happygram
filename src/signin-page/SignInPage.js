@@ -6,6 +6,7 @@ import {auth} from "../firebase";
 import hide from "../images/hide.png";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPhone} from "@fortawesome/free-solid-svg-icons/faPhone";
+import {faFaceFrown} from "@fortawesome/free-solid-svg-icons/faFaceFrown";
 
 const SignInPage = () => {
 	const [passwordShown, setPasswordShown] = useState(false);
@@ -28,7 +29,8 @@ const SignInPage = () => {
 				loginPassword
 			);
 			console.log(user);
-			alert("WELCOME")
+			window.location.replace("/search");
+
 		} catch {
 			alert('Incorrect email or password')
 		}
@@ -66,11 +68,17 @@ const SignInPage = () => {
 					<div className="have-account-signup">Sign up</div>
 				</Link>
 			</div>
+			<div className="forgot-pass-wrapper">
+				<Link className="forgot-pass" to='/reset'>Forgot Password?</Link>
+				<div style={{marginTop:"-12px", marginLeft:"5px"}}>
+				<FontAwesomeIcon icon={faFaceFrown}/>
+				</div>
+			</div>
 			<button onClick={login} className="btn btn-295">Log In</button>
 			<div className="project-main or-login">OR</div>
 			<button onClick={showPhonePage} className="phone-btn">
 				<div>Sign Up by phone</div>
-				<FontAwesomeIcon icon={faPhone} />
+					<FontAwesomeIcon icon={faPhone} />
 			</button>
 
 		</div>
