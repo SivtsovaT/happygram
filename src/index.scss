@@ -5,6 +5,7 @@
 	--dark-red-color: #af532d;
 	--main-white-color: #ffff;
 	--main-green-color: #86cc18;
+	--main-yellow-color: #fafad2;
 }
 body {
 	margin: 0 auto;
@@ -74,7 +75,7 @@ body {
 	width: 150px;
 	border-radius: 100px;
 	font-family: "Roboto Thin";
-	background-color: lightgoldenrodyellow;
+	background-color: var(--main-yellow-color);
 	color: var(--main-font-color);
 	border: none;
 	cursor: pointer;

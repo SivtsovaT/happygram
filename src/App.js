@@ -7,6 +7,7 @@ import SignInPage from "./signin-page/SignInPage";
 import SignInByPhonePage from "./signIn-by-phone-page/SignInByPhonePage";
 import SearchPage from "./search-page/SearchPage";
 import ResetPasswordPage from "./reset-password-page/ResetPasswordPage";
+import MyContactsPage from "./my-contacts-page/MyContactsPage";
 const App = () => {
   return (
       <>
@@ -17,6 +18,7 @@ const App = () => {
               <Route path="phone" element={<SignInByPhonePage/>}/>
               <Route path="search" element={<SearchPage/>}/>
               <Route path="reset" element={<ResetPasswordPage/>}/>
+              <Route path="contacts" element={<MyContactsPage/>}/>
           </Routes>
       </>
   )
