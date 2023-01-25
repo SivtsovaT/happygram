@@ -75,11 +75,11 @@ const SearchPage = () => {
 	}, [searchValue, users]);
 
 	const addUserToContacts = async (id, displayName, email) => {
-		const dialogId = id;
-		const contactRef = doc(db, `users/${currentAuth}/dialogs/${dialogId}`);
+		const contactId = id;
+		const contactRef = doc(db, `users/${currentAuth}/contacts/${contactId}`);
 		await setDoc(contactRef, {
-			contactName: displayName,
-			contactEmail: email
+			displayName: displayName,
+			email: email
 		}, {merge: true});
 	}
 
