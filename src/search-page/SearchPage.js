@@ -88,6 +88,11 @@ const SearchPage = () => {
 		window.location.replace("contacts");
 	}
 
+	const logout = () => {
+		window.location.replace("/signin");
+	}
+
+
 	return (
 		<div className="content">
 			<div className="users-header">
@@ -104,7 +109,7 @@ const SearchPage = () => {
 				<div className="project-main">
 					Welcome, {userData.displayName}!
 				</div>
-				<FontAwesomeIcon style={{width:"30px", height:"30px"}} icon={faRightFromBracket}/>
+				<FontAwesomeIcon onClick={logout} style={{width:"30px", height:"30px"}} icon={faRightFromBracket}/>
 			</div>
 			<div className="users-list">
 				{

@@ -8,6 +8,8 @@ import {faMagnifyingGlass} from "@fortawesome/free-solid-svg-icons/faMagnifyingG
 import {faRightFromBracket} from "@fortawesome/free-solid-svg-icons/faRightFromBracket";
 import avatar from "../images/search-page/avatar.jpg";
 import MessagesPage from "../messages-page/MessagesPage";
+import {Link} from "react-router-dom";
+import back from "../images/back.png";
 
 const MyContactsPage = () => {
 	const [searchValue, setSearchValue] = useState('');
@@ -91,6 +93,10 @@ const MyContactsPage = () => {
 		setInvisibleHome(true);
 	}
 
+	const logout = () => {
+	  window.location.replace("/signin");
+	}
+
 	return (
 		<>
 			{
@@ -114,8 +120,12 @@ const MyContactsPage = () => {
 					<div className="project-main">
 						Welcome, {userData.displayName}!
 					</div>
-					<FontAwesomeIcon style={{width:"30px", height:"30px"}} icon={faRightFromBracket}/>
+					<FontAwesomeIcon onClick={logout} style={{width:"30px", height:"30px"}} icon={faRightFromBracket}/>
 				</div>
+				<Link to="/search" className="link-panel">
+					<img src={back} alt="back"/>
+				</Link>
+
 				<div className="users-list">
 					{
 						filteredContacts.map(contact => {
