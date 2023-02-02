@@ -4,11 +4,6 @@ import { storage } from './firebase';
 
 function New() {
   const [progress, setProgress] = useState(0);
-  const formHandler = (e) => {
-    e.preventDefault();
-    const file = e.target[0].files[0];
-    uploadFiles(file);
-  };
   const uploadFiles = (file) => {
     //
     if (!file) return;
@@ -30,6 +25,11 @@ function New() {
         });
       },
     );
+  };
+  const formHandler = (e) => {
+    e.preventDefault();
+    const file = e.target[0].files[0];
+    uploadFiles(file);
   };
   return (
     <div>
