@@ -8,6 +8,7 @@ import { faPhone } from '@fortawesome/free-solid-svg-icons/faPhone';
 import back from '../images/back.png';
 import hide from '../images/hide.png';
 import { db, auth } from '../firebase';
+import Popup from '../popup-page/Popup';
 
 function SignUpPage() {
   const [passwordShown, setPasswordShown] = useState(false);
@@ -15,6 +16,8 @@ function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
 
   const togglePassword = () => {
     setPasswordShown(!passwordShown);
@@ -26,18 +29,41 @@ function SignUpPage() {
   const handleSignup = async (event) => {
     event.preventDefault();
     if (name.length === 0) {
-      alert('The field "name" cannot be empty');
+      setPopupVisible(true);
+      setPopupMessage('The field "name" cannot be empty');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
     } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(email)) {
-      alert('Please enter a valid email');
+      setPopupVisible(true);
+      setPopupMessage('Please enter a valid email');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
     } else if (password.length < 6) {
-      alert('Password length cannot be less than 6 characters');
+      setPopupVisible(true);
+      setPopupMessage('Password length cannot be less than 6 characters');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
     } else if (password.valueOf() !== confirmPassword.valueOf()) {
-      alert('Confirm your password please');
+      setPopupVisible(true);
+      setPopupMessage('Confirm your password please');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
     } else {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userRef = doc(db, `users/${userCredential.user.uid}`);
       await setDoc(userRef, { displayName: name, email });
-      alert('Account has been created');
+      setPopupVisible(true);
+      setPopupMessage('Account has been created');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+      setTimeout(() => {
+        window.location.replace('/search');
+      }, 1000);
     }
   };
   return (
@@ -98,7 +124,9 @@ function SignUpPage() {
           <div>Sign Up by phone</div>
           <FontAwesomeIcon icon={faPhone} />
         </button>
-
+        {
+            popupVisible && <Popup text={popupMessage} />
+        }
       </div>
       <button type="button" onClick={handleSignup} className="btn btn-295">Sign up</button>
     </div>

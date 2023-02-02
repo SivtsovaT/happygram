@@ -7,11 +7,14 @@ import { faPhone } from '@fortawesome/free-solid-svg-icons/faPhone';
 import { faFaceFrown } from '@fortawesome/free-solid-svg-icons/faFaceFrown';
 import hide from '../images/hide.png';
 import { auth } from '../firebase';
+import Popup from '../popup-page/Popup';
 
 function SignInPage() {
   const [passwordShown, setPasswordShown] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
 
   const togglePassword = () => {
     setPasswordShown(!passwordShown);
@@ -31,7 +34,11 @@ function SignInPage() {
       console.log(user);
       window.location.replace('/search');
     } catch {
-      alert('Incorrect email or password');
+      setPopupVisible(true);
+      setPopupMessage('Please write something');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
     }
   };
 
@@ -83,7 +90,9 @@ function SignInPage() {
         <div>Sign Up by phone</div>
         <FontAwesomeIcon icon={faPhone} />
       </button>
-
+      {
+          popupVisible && <Popup text={popupMessage} />
+      }
     </div>
   );
 }
