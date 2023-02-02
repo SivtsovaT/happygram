@@ -1,5 +1,7 @@
 # Getting Started with Create React App
 
+[![Deploy to Firebase Hosting on merge](https://github.com/SivtsovaT/happygram/actions/workflows/firebase-hosting-merge.yml/badge.svg)](https://github.com/SivtsovaT/happygram/actions/workflows/firebase-hosting-merge.yml)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
