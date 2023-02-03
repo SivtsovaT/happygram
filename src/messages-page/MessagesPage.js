@@ -17,6 +17,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [conId, setConId] = useState([]);
   const [usId, setUsId] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [sendButtonVisible, setSendButtonVisible] = useState(false);
 
   const sentStyles = {
     display: 'flex',
@@ -50,6 +51,12 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
     };
     getSeMessages();
   }, [currentAuth]);
+  const handleInput = (event) => {
+    setInputMessage(event.target.value);
+    if (inputMessage.length > 0) {
+      setSendButtonVisible(true);
+    }
+  };
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -60,24 +67,20 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
     }
     setHttpPending(true);
     try {
-      if (inputMessage.length > 0) {
-        await addDoc(collection(db, 'messages'), {
-          text: inputMessage,
-          userId,
-          contactId,
-          created: serverTimestamp(),
-        }, { merge: true });
-        const q = query(collection(db, 'messages'), orderBy('created'));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach(() => {
-          setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
-        });
-
-        setHttpPending(false);
-        setInputMessage('');
-      } else {
-        alert('Please write something');
-      }
+      await addDoc(collection(db, 'messages'), {
+        text: inputMessage,
+        userId,
+        contactId,
+        created: serverTimestamp(),
+      }, { merge: true });
+      const q = query(collection(db, 'messages'), orderBy('created'));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      setHttpPending(false);
+      setInputMessage('');
+      setSendButtonVisible(false);
       // eslint-disable-next-line no-shadow
     } catch (e) {
       console.log(e);
@@ -86,7 +89,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   };
 
   return (
-    <div className="content">
+    <div className="content" style={{ zIndex: '1', position: 'relative' }}>
       <button type="button" onClick={showHome} className="link-panel">
         <img src={back} alt="back" />
       </button>
@@ -136,12 +139,15 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
           style={{ height: '36px', width: '270px', borderRadius: '5px' }}
           value={inputMessage}
           placeholder="write your message"
-          onChange={(event) => setInputMessage(event.target.value)}
+          onChange={handleInput}
         />
-        {/* eslint-disable-next-line react/button-has-type */}
-        <button className="send-btn" onClick={sendMessage}>
-          <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faPaperPlane} />
-        </button>
+        {
+          sendButtonVisible ? (
+            <button type="button" className="send-btn" onClick={sendMessage}>
+              <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faPaperPlane} />
+            </button>
+          ) : null
+        }
       </div>
     </div>
   );
