@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import './MessagesPage.scss';
 import {
-  addDoc, collection, getDocs, query, serverTimestamp, orderBy,
+  addDoc, collection, getDocs, query, serverTimestamp, orderBy, doc, getDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons/faPaperPlane';
 import moment from 'moment';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import {
+  faDownload, faImage, faPaperclip, faVideo,
+} from '@fortawesome/free-solid-svg-icons';
 import back from '../images/back.png';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
+import ImageComponent from '../image-component/ImageComponent';
 
 function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [currentAuth] = useState(null);
@@ -18,6 +23,86 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [usId, setUsId] = useState([]);
   const [messages, setMessages] = useState([]);
   const [sendButtonVisible, setSendButtonVisible] = useState(false);
+  const [image, setImage] = useState('');
+  const [url, setUrl] = useState(null);
+  const [downloadImageVisible, setDownloadImageVisible] = useState(false);
+  const [invisibleMessages, setInvisibleMessages] = useState(false);
+  const [messageImage, setMessageImage] = useState('');
+  const [sendImageBlockVisible, setSendImageBlockVisible] = useState(false);
+  const [sendVideoBlockVisible, setSendVideoBlockVisible] = useState(false);
+
+  const stylesMessages = {
+    display: invisibleMessages ? 'none' : 'flex',
+  };
+
+  const showMessages = () => {
+    setInvisibleMessages((prevState) => !prevState);
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+  const showImage = async (id) => {
+    const messageId = id;
+    const contactRef = doc(db, `messages/${messageId}`);
+    const docSnap = await getDoc(contactRef);
+    await setMessageImage(docSnap.data().attachments);
+    setInvisibleMessages(true);
+  };
+
+  const handleSubmit = async () => {
+    const imageId = new Date().toISOString();
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const imageRef = ref(storage, `images/${userId}/${contactId}/${image}/${imageId}`);
+    uploadBytes(imageRef, image).then(() => {
+      // eslint-disable-next-line no-shadow
+      getDownloadURL(imageRef).then((url) => {
+        setUrl(url);
+      }).catch((error) => {
+        console.log(error.message, 'error getting image url');
+      }).catch((error) => {
+        console.log(error.message, 'error getting image url');
+      });
+      setDownloadImageVisible(true);
+    });
+  };
+  const sendImage = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    await addDoc(collection(db, 'messages'), {
+      attachments: url,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+    }, { merge: true });
+    const q = query(collection(db, 'messages'), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    setImage('');
+  };
+  const sendVideo = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    await addDoc(collection(db, 'messages'), {
+      video: url,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+    }, { merge: true });
+    const q = query(collection(db, 'messages'), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    setImage('');
+  };
 
   const sentStyles = {
     display: 'flex',
@@ -37,6 +122,19 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
     background: '#E0FFFF',
   };
 
+  const messageImageStyles = {
+    width: '40px',
+    height: '40px',
+    marginLeft: '10px',
+    borderRadius: '50%',
+  };
+
+  const messageVideoStyles = {
+    width: '200px',
+    height: '60px',
+    borderRadius: '10px',
+  };
+
   useEffect(() => {
     const auth = getAuth();
     const userId = auth.currentUser.uid;
@@ -44,6 +142,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
         setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       });
       await setConId(contactId);
@@ -76,6 +175,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
         setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       });
       setHttpPending(false);
@@ -87,19 +187,37 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setHttpPending(false);
     }
   };
+  const showSendImageBlock = () => {
+    setSendVideoBlockVisible(false);
+    setSendImageBlockVisible(true);
+  };
+  const showSendVideoBlock = () => {
+    setSendVideoBlockVisible(true);
+    setSendImageBlockVisible(false);
+  };
 
   return (
-    <div className="content" style={{ zIndex: '1', position: 'relative' }}>
-      <button type="button" onClick={showHome} className="link-panel">
-        <img src={back} alt="back" />
-      </button>
-      <div className="project-header">{contactDisplayName}</div>
-      <div className="message-list">
-        {
+    <>
+      {
+        invisibleMessages && (
+        <ImageComponent
+          showMessages={showMessages}
+          messageImage={messageImage}
+        />
+        )
+      }
+      <div style={stylesMessages} className="content-messages">
+        <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={showHome} className="link-panel">
+          <img src={back} alt="back" />
+        </button>
+        <div className="project-header">{contactDisplayName}</div>
+        {/* <div className="image-large" /> */}
+        <div className="message-list">
+          {
             messages.map((mes) => (
               <div key={mes.id}>
                 {
-                  // eslint-disable-next-line no-nested-ternary
+                    // eslint-disable-next-line no-nested-ternary
                     mes.userId === usId && mes.contactId === conId
                       ? (
                         <div style={sentStyles}>
@@ -110,6 +228,39 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                             >
                               {moment(mes.created.toDate()).calendar()}
                             </div>
+                            {
+                                  // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                                  mes.attachments ? (
+                                    <button
+                                      style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                      onClick={() => showImage(mes.id)}
+                                      type="button"
+                                    >
+                                      {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                      <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                    </button>
+                                  ) : null
+                                }
+                            {
+                              // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                              mes.video ? (
+                                <button
+                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                  // onClick={() => showImage(mes.id)}
+                                  type="button"
+                                >
+                                  {/* eslint-disable-next-line max-len */}
+                                  { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                  <video
+                                    style={messageVideoStyles}
+                                    src={mes.video}
+                                    autoPlay={mes.video}
+                                    controls
+                                  />
+                                </button>
+                              ) : null
+                            }
+
                           </div>
                         </div>
                       )
@@ -123,6 +274,39 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                               >
                                 {moment(mes.created.toDate()).calendar()}
                               </div>
+                              {
+                                // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                                mes.attachments ? (
+                                  <button
+                                    style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                    onClick={() => showImage(mes.id)}
+                                    type="button"
+                                  >
+                                    {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                    <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                  </button>
+                                ) : null
+                              }
+                              {
+                                // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                                mes.video ? (
+                                  <button
+                                    style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                    onClick={() => showImage(mes.id)}
+                                    type="button"
+                                  >
+                                    {/* eslint-disable-next-line max-len */}
+                                    { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                    <video
+                                      style={messageVideoStyles}
+                                      src={mes.video}
+                                      autoPlay={mes.video}
+                                      controls
+                                    />
+                                  </button>
+                                ) : null
+                              }
+
                             </div>
                           </div>
                         )
@@ -131,25 +315,70 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
               </div>
             ))
           }
-      </div>
-      <div className="send-input-wrapper">
-        <input
-          type="text"
-          className="input-log"
-          style={{ height: '36px', width: '270px', borderRadius: '5px' }}
-          value={inputMessage}
-          placeholder="write your message"
-          onChange={handleInput}
-        />
+        </div>
+        <div className="send-input-wrapper">
+          <input
+            type="text"
+            className="input-log"
+            style={{ height: '36px', width: '270px', borderRadius: '5px' }}
+            value={inputMessage}
+            placeholder="write your message"
+            onChange={handleInput}
+          />
+          {
+            sendButtonVisible ? (
+              <button type="button" className="send-btn" onClick={sendMessage}>
+                <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faPaperPlane} />
+              </button>
+            ) : null
+          }
+        </div>
+        <div className="media-wrapper">
+          <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendImageBlock} type="button">
+            <FontAwesomeIcon icon={faImage} style={{ width: '20px', height: '20px' }} />
+          </button>
+          <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendVideoBlock} type="button">
+            <FontAwesomeIcon icon={faVideo} style={{ width: '20px', height: '20px' }} />
+          </button>
+        </div>
         {
-          sendButtonVisible ? (
-            <button type="button" className="send-btn" onClick={sendMessage}>
-              <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faPaperPlane} />
-            </button>
-          ) : null
+          sendImageBlockVisible && (
+          <div className="fileload">
+            <div className="file-load-block">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              <label className="input-label">
+                <FontAwesomeIcon style={{ width: '25px', height: '25px' }} icon={faPaperclip} />
+                <input style={{ opacity: '0' }} type="file" onChange={handleImageChange} value="" className="file-inp" />
+              </label>
+            </div>
+            <button className="input-btn" type="button" onClick={handleSubmit}>Download</button>
+            <button className="input-btn" type="button" onClick={sendImage}>Send image</button>
+            {
+                    downloadImageVisible ? <img style={{ width: '30px', height: '30px', marginLeft: '5px' }} src={url} alt="img" /> : null
+                  }
+          </div>
+          )
+        }
+        {
+          sendVideoBlockVisible && (
+          <div className="fileload">
+            <div className="file-load-block">
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              <label className="input-label">
+                <FontAwesomeIcon style={{ width: '25px', height: '25px' }} icon={faPaperclip} />
+                <input style={{ opacity: '0' }} type="file" onChange={handleImageChange} value="" className="file-inp" />
+              </label>
+            </div>
+            <button className="input-btn" type="button" onClick={handleSubmit}>Download</button>
+            <button className="input-btn" type="button" onClick={sendVideo}>Send video</button>
+            {
+                    downloadImageVisible ? <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faDownload} /> : null
+                  }
+          </div>
+          )
         }
       </div>
-    </div>
+    </>
   );
 }
 
