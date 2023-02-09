@@ -19,7 +19,7 @@ body {
 }
 .content {
 	margin: 0 auto;
-	background: url("./images/back.jpg") center center/cover no-repeat;
+	background: url("./images/new-back.jpeg") center center/cover no-repeat;
 	max-width: 390px;
 	height: 844px;
 	display: flex;
@@ -101,7 +101,7 @@ body {
 }
 .input-log:focus-visible{
 	border: 3px solid var(--main-element-color);
-	border: 3px solid var(--main-green-color);
+	border: 3px solid deeppink;
 	outline: none;
 }
 
@@ -123,12 +123,12 @@ body {
 	justify-content: center;
 	align-items: center;
 	text-decoration: none;
-	border: 2px green solid;
+	border: 2px deeppink solid;
 	border-radius: 10px;
 	margin-top: 30px;
 	margin-left: -325px;
 	margin-bottom: 30px;
-	background: var(--main-green-color);
+	background: url("./images/new-back.jpeg") center center/cover no-repeat;
 }
 .password-wrapper {
 	display: flex;
@@ -148,7 +148,7 @@ body {
 }
 /* width */
 ::-webkit-scrollbar {
-	width: 10px;
+	width: 5px;
 }
 
 /* Track */
@@ -165,6 +165,6 @@ body {
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--main-green-color);
+	background: #E0FFFF;
 
 }

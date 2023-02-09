@@ -9,9 +9,12 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons/faPaperPlane';
 import moment from 'moment';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
-  faDownload, faImage, faPaperclip, faVideo,
+  faDownload, faFile, faImage, faPaperclip, faVideo,
 } from '@fortawesome/free-solid-svg-icons';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { saveAs } from 'file-saver';
 import back from '../images/back.png';
+import docFlat from '../images/messages-page/doc-flat.png';
 import { db, storage } from '../firebase';
 import ImageComponent from '../image-component/ImageComponent';
 
@@ -30,6 +33,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [messageImage, setMessageImage] = useState('');
   const [sendImageBlockVisible, setSendImageBlockVisible] = useState(false);
   const [sendVideoBlockVisible, setSendVideoBlockVisible] = useState(false);
+  const [sendFileBlockVisible, setSendFileBlockVisible] = useState(false);
 
   const stylesMessages = {
     display: invisibleMessages ? 'none' : 'flex',
@@ -85,6 +89,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     });
     setImage('');
+    setDownloadImageVisible(false);
   };
   const sendVideo = async () => {
     const auth = getAuth();
@@ -102,6 +107,25 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     });
     setImage('');
+    setDownloadImageVisible(false);
+  };
+  const sendFile = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    await addDoc(collection(db, 'messages'), {
+      file: url,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+    }, { merge: true });
+    const q = query(collection(db, 'messages'), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    setImage('');
+    setDownloadImageVisible(false);
   };
 
   const sentStyles = {
@@ -190,10 +214,22 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const showSendImageBlock = () => {
     setSendVideoBlockVisible(false);
     setSendImageBlockVisible(true);
+    setSendFileBlockVisible(false);
   };
   const showSendVideoBlock = () => {
     setSendVideoBlockVisible(true);
     setSendImageBlockVisible(false);
+    setSendFileBlockVisible(false);
+  };
+  const showSendFileBlock = () => {
+    setSendVideoBlockVisible(false);
+    setSendImageBlockVisible(false);
+    setSendFileBlockVisible(true);
+  };
+
+  const downloadFile = (file) => {
+    const messageFile = file;
+    saveAs(messageFile);
   };
 
   return (
@@ -206,7 +242,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         />
         )
       }
-      <div style={stylesMessages} className="content-messages">
+      <div style={stylesMessages} className="content">
         <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={showHome} className="link-panel">
           <img src={back} alt="back" />
         </button>
@@ -243,6 +279,23 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                 }
                             {
                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                              mes.file ? (
+                                <div className="file-wrapper">
+                                  <img
+                                    src={docFlat}
+                                    alt="doc"
+                                    style={{
+                                      width: '30px', height: '30px', marginLeft: '10px', marginRight: '10px',
+                                    }}
+                                  />
+                                  {/* eslint-disable-next-line max-len */}
+                                  <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                </div>
+                              ) : null
+                            }
+
+                            {
+                              // eslint-disable-next-line jsx-a11y/img-redundant-alt
                               mes.video ? (
                                 <button
                                   style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
@@ -260,7 +313,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                 </button>
                               ) : null
                             }
-
                           </div>
                         </div>
                       )
@@ -289,6 +341,17 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                               }
                               {
                                 // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                                mes.file ? (
+                                  <div className="file-wrapper">
+                                    <img src={docFlat} alt="doc" style={{ width: '30px', height: '30px', marginLeft: '10px' }} />
+                                    {/* eslint-disable-next-line max-len */}
+                                    <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                  </div>
+                                ) : null
+                              }
+
+                              {
+                                // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                 mes.video ? (
                                   <button
                                     style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
@@ -304,9 +367,9 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                       controls
                                     />
                                   </button>
+
                                 ) : null
                               }
-
                             </div>
                           </div>
                         )
@@ -340,6 +403,10 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
           <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendVideoBlock} type="button">
             <FontAwesomeIcon icon={faVideo} style={{ width: '20px', height: '20px' }} />
           </button>
+          <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendFileBlock} type="button">
+            <FontAwesomeIcon icon={faFile} style={{ width: '20px', height: '20px' }} />
+          </button>
+
         </div>
         {
           sendImageBlockVisible && (
@@ -372,10 +439,28 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
             <button className="input-btn" type="button" onClick={handleSubmit}>Download</button>
             <button className="input-btn" type="button" onClick={sendVideo}>Send video</button>
             {
-                    downloadImageVisible ? <FontAwesomeIcon style={{ width: '20px', height: '20px' }} icon={faDownload} /> : null
+                    downloadImageVisible ? <FontAwesomeIcon style={{ width: '20px', height: '20px', marginLeft: '10px' }} icon={faDownload} /> : null
                   }
           </div>
           )
+        }
+        {
+            sendFileBlockVisible && (
+            <div className="fileload">
+              <div className="file-load-block">
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+                <label className="input-label">
+                  <FontAwesomeIcon style={{ width: '25px', height: '25px' }} icon={faPaperclip} />
+                  <input style={{ opacity: '0' }} type="file" onChange={handleImageChange} value="" className="file-inp" />
+                </label>
+              </div>
+              <button className="input-btn" type="button" onClick={handleSubmit}>Download</button>
+              <button className="input-btn" type="button" onClick={sendFile}>Send file</button>
+              {
+                    downloadImageVisible ? <FontAwesomeIcon style={{ width: '20px', height: '20px', marginLeft: '10px' }} icon={faDownload} /> : null
+                  }
+            </div>
+            )
         }
       </div>
     </>

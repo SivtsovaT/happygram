@@ -41,6 +41,10 @@
 			bottom: 2px;
 			font-size: 12px;
 		}
+		.file-wrapper {
+			display: flex;
+			align-items: baseline;
+		}
 	}
 }
 .send-input-wrapper {
@@ -49,8 +53,8 @@
 	align-items: center;
 	margin-top: 50px;
 	.send-btn {
-		background: var(--main-green-color);
-		border: none;
+		background: #E0FFFF;
+		border: 2px var(--main-font-color) solid;
 		border-radius: 10px;
 		width: 38px;
 		height: 38px;
