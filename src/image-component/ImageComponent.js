@@ -3,14 +3,28 @@ import './ImageComponent.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 
-function ImageComponent({ showMessages, messageImage }) {
+function ImageComponent({ showMessages, messageImage, showGroup }) {
   return (
     <div className="content-messages">
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div className="image-btn" onClick={showMessages} onKeyUp={showMessages}>
-        <FontAwesomeIcon icon={faClose} style={{ width: '20px', height: '20px' }} />
-      </div>
+
       <img className="message-image" src={messageImage} alt="message_image" />
+      {
+            showMessages && (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+              <div className="image-btn" onClick={showMessages} onKeyUp={showMessages}>
+                <FontAwesomeIcon icon={faClose} style={{ width: '20px', height: '20px' }} />
+              </div>
+            )
+        }
+      {
+            showGroup && (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+              <div className="image-btn" onClick={showGroup} onKeyUp={showGroup}>
+                <FontAwesomeIcon icon={faClose} style={{ width: '20px', height: '20px' }} />
+              </div>
+            )
+
+      }
     </div>
   );
 }

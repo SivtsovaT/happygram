@@ -8,6 +8,8 @@ import SignInByPhonePage from './signIn-by-phone-page/SignInByPhonePage';
 import SearchPage from './search-page/SearchPage';
 import ResetPasswordPage from './reset-password-page/ResetPasswordPage';
 import MyContactsPage from './my-contacts-page/MyContactsPage';
+import CreateGroupPage from './create-group-page/CreateGroupPage';
+import GroupsListPage from './groups-list-page/GroupsListPage';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="search" element={<SearchPage />} />
       <Route path="reset" element={<ResetPasswordPage />} />
       <Route path="contacts" element={<MyContactsPage />} />
+      <Route path="group" element={<CreateGroupPage />} />
+      <Route path="groupslist" element={<GroupsListPage />} />
     </Routes>
   );
 }

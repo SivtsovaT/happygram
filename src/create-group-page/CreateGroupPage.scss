@@ -1,0 +1,49 @@
+.group-image {
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	border: 2px deeppink solid;
+}
+.input-group {
+	width: 200px;
+	height: 50px;
+	margin-top: 30px;
+}
+.fileload-group {
+	display: flex;
+	justify-content: flex-start;
+	width: 150px;
+	height: 30px;
+	margin-top: 10px;
+
+	.file-load-block {
+		position: relative;
+
+		.input-label {
+			width: 30px;
+			position: absolute;
+			left: 97px;
+			top: -34px;
+		}
+	}
+	.input-btn {
+		margin-left: 35px;
+		height: 30px;
+		width: 80px;
+		background-color: #E0FFFF;
+		border: none;
+		cursor: pointer;
+		transition: 0.5s all;
+		font-size: 12px;
+		font-weight: 700;
+		line-height: 32px;
+		text-align: center;
+		border-radius: 20px;
+		color: var(--main-font-color);
+		&:hover {
+			box-shadow: 7px -7px 17px var(--dark-red-color);
+			border: none;
+		}
+	}
+
+}

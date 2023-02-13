@@ -10,3 +10,51 @@
 	width: 100px;
 	height: 30px;
 }
+
+.contacts-panel {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 380px;
+	.link-left {
+		width: 30px;
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-decoration: none;
+		border: 2px deeppink solid;
+		border-radius: 10px;
+		margin-top: 30px;
+		margin-bottom: 30px;
+		background: url("../images/new-back.jpeg") center center/cover no-repeat;
+	}
+	.link-right {
+		width: 30px;
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-decoration: none;
+		border: 2px deeppink solid;
+		border-radius: 10px;
+		margin-top: 30px;
+		margin-bottom: 30px;
+	}
+	.my-groups-wrapper {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 120px;
+		height: 30px;
+		border: 2px deeppink solid;
+		border-radius: 10px;
+		.my-groups-title {
+			font-size: 14px;
+			color: var(--main-font-color);
+			font-weight: 700;
+			margin-right: 10px;
+		}
+	}
+
+}

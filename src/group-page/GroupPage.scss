@@ -1,0 +1,38 @@
+.group-header {
+	background: url("../images/search-page/panel.jpg");
+	width: 100%;
+	height: 100px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	.group-title {
+		width: 200px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-left: 10px;
+		margin-right: 10px;
+	}
+	.link-left {
+		width: 30px;
+		height: 30px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		text-decoration: none;
+		border: 2px deeppink solid;
+		border-radius: 10px;
+		margin-top: 30px;
+		margin-left: 10px;
+		margin-bottom: 30px;
+		background: url("../images/new-back.jpeg") center center/cover no-repeat;
+	}
+}
+
+.message-user-name {
+	color: gray;
+	position: absolute;
+	left: 15px;
+	top: 5px;
+	font-size: 13px;
+}

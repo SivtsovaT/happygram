@@ -45,7 +45,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   useEffect(() => {
     const auth = getAuth();
     const userId = auth.currentUser.uid;
-    const getSeMessages = async () => {
+    const getMessages = async () => {
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach(() => {
@@ -55,7 +55,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       await setConId(contactId);
       await setUsId(userId);
     };
-    getSeMessages();
+    getMessages();
   }, [currentAuth]);
 
   const stylesMessages = {

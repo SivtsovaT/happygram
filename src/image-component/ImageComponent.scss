@@ -16,4 +16,16 @@
 	justify-content: center;
 	align-items: center;
 }
+.image-btn-n {
+	position: absolute;
+	z-index: 2;
+	top: 10px;
+	right: 200px;
+	border: 2px var(--main-font-color) solid;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
 
