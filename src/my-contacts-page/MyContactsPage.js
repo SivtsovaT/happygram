@@ -8,10 +8,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
 import { Link } from 'react-router-dom';
+import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
 import avatar from '../images/search-page/avatar.jpg';
 import MessagesPage from '../messages-page/MessagesPage';
 import { db } from '../firebase';
 import back from '../images/back.png';
+import GroupPage from '../group-page/GroupPage';
 
 function MyContactsPage() {
   const [searchValue, setSearchValue] = useState('');
@@ -21,10 +23,18 @@ function MyContactsPage() {
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [contactDisplayName, setContactDisplayName] = useState('');
   const [invisibleHome, setInvisibleHome] = useState(false);
+  const [invisibleGroup, setInvisibleGroup] = useState(true);
   const [contactId, setContactId] = useState('');
+  const [groups, setGroups] = useState([]);
+  const [groupName, setGroupName] = useState('');
+  const [groupAdmin, setGroupAdmin] = useState('');
+  const [groupAdminName, setGroupAdminName] = useState('');
+  const [groupAdminEmail, setGroupAdminEmail] = useState('');
+  const [groupId, setGroupId] = useState('');
+  const [groupAvatar, setGroupAvatar] = useState('');
 
   const stylesHome = {
-    display: invisibleHome ? 'none' : 'flex',
+    display: invisibleHome || !invisibleGroup ? 'none' : 'flex',
   };
 
   const getAuthUser = async () => {
@@ -75,6 +85,18 @@ function MyContactsPage() {
   }, [currentAuth]);
 
   useEffect(() => {
+    if (!currentAuth) {
+      return;
+    }
+    const getGroups = async () => {
+      const data = await getDocs(collection(db, `users/${currentAuth}/groupContacts`));
+      // eslint-disable-next-line no-shadow
+      setGroups(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    };
+    getGroups();
+  }, [currentAuth]);
+
+  useEffect(() => {
     setFilteredContacts(
       contacts.filter(
         (contact) => contact.displayName.toLowerCase().includes(searchValue.toLowerCase()),
@@ -85,6 +107,10 @@ function MyContactsPage() {
   const showHome = () => {
     setInvisibleHome((prevState) => !prevState);
   };
+  const showContactsList = () => {
+    setInvisibleGroup(true);
+    setInvisibleHome(false);
+  };
 
   const showContact = async (id) => {
     // eslint-disable-next-line no-shadow
@@ -94,6 +120,19 @@ function MyContactsPage() {
     await setContactDisplayName(docSnap.data().displayName);
     await setContactId(contactId);
     setInvisibleHome(true);
+    setInvisibleGroup(true);
+  };
+  const showGroup = async (id) => {
+    const groupRef = doc(db, `groups/${id}`);
+    const docSnap = await getDoc(groupRef);
+    await setGroupName(docSnap.data().groupName);
+    await setGroupAdmin(docSnap.data().groupAdmin);
+    await setGroupAdminName(docSnap.data().adminName);
+    await setGroupAvatar(docSnap.data().groupAvatar);
+    await setGroupAdminEmail(docSnap.data().adminEmail);
+    setGroupId(id);
+    setInvisibleHome(false);
+    setInvisibleGroup(false);
   };
 
   const logout = () => {
@@ -111,6 +150,20 @@ function MyContactsPage() {
             />
             )
         }
+      {
+          !invisibleGroup && (
+          <GroupPage
+            groupName={groupName}
+            groupAdmin={groupAdmin}
+            adminName={groupAdminName}
+            adminEmail={groupAdminEmail}
+            groupId={groupId}
+            groupAvatar={groupAvatar}
+            showContactsList={showContactsList}
+          />
+          )
+      }
+
       <div style={stylesHome} className="content">
         <div className="users-header">
           <div className="password-wrapper">
@@ -131,9 +184,23 @@ function MyContactsPage() {
           </div>
           <FontAwesomeIcon onClick={logout} style={{ width: '30px', height: '30px' }} icon={faRightFromBracket} />
         </div>
-        <Link to="/search" className="link-panel">
-          <img src={back} alt="back" />
-        </Link>
+        <div className="contacts-panel">
+          <Link to="/search" className="link-left">
+            <img src={back} alt="back" />
+          </Link>
+          <div className="my-groups-wrapper">
+            <div className="my-groups-title">My groups</div>
+            <Link to="/groupslist">
+              <FontAwesomeIcon icon={faUserGroup} />
+            </Link>
+          </div>
+          <div className="my-groups-wrapper">
+            <div className="my-groups-title">Create group</div>
+            <Link to="/group">
+              <FontAwesomeIcon icon={faUserGroup} />
+            </Link>
+          </div>
+        </div>
 
         <div className="users-list">
           {
@@ -152,6 +219,23 @@ function MyContactsPage() {
                 </div>
               ))
             }
+          {
+            groups.map((group) => (
+              <div key={group.id} className="user-wrapper">
+                {
+                  group.groupAvatar
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                    ? <img className="user-avatar" src={group.groupAvatar} alt="avatar" onClick={() => showGroup(group.id)} onKeyUp={() => showGroup(group.id)} />
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                    : <img className="user-avatar" src={avatar} alt="avatar" onClick={() => showGroup(group.id)} onKeyUp={() => showGroup(group.id)} />
+                }
+                <div className="user-info">
+                  <div className="project-main">{group.groupName}</div>
+                </div>
+
+              </div>
+            ))
+          }
         </div>
         <button type="button" className="btn btn-295">CONTINUE</button>
       </div>
