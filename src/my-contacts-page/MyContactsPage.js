@@ -2,18 +2,22 @@ import React, { useEffect, useState } from 'react';
 import './MyContactsPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
-  doc, collection, getDocs, getDoc,
+  doc, collection, getDocs, getDoc, setDoc,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
 import { Link } from 'react-router-dom';
-import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
+import { faUserGroup, faUserLock } from '@fortawesome/free-solid-svg-icons';
 import avatar from '../images/search-page/avatar.jpg';
+import unlockIcon from '../images/my-contacts-page/unlock-icon.svg';
+import youBlocked from '../images/my-contacts-page/you-blocked.jpg';
+import unknown from '../images/my-contacts-page/unknown.jpg';
 import MessagesPage from '../messages-page/MessagesPage';
 import { db } from '../firebase';
 import back from '../images/back.png';
 import GroupPage from '../group-page/GroupPage';
+import ChannelPage from '../channel-page/ChannelPage';
 
 function MyContactsPage() {
   const [searchValue, setSearchValue] = useState('');
@@ -24,6 +28,7 @@ function MyContactsPage() {
   const [contactDisplayName, setContactDisplayName] = useState('');
   const [invisibleHome, setInvisibleHome] = useState(false);
   const [invisibleGroup, setInvisibleGroup] = useState(true);
+  const [invisibleChannel, setInvisibleChannel] = useState(true);
   const [contactId, setContactId] = useState('');
   const [groups, setGroups] = useState([]);
   const [groupName, setGroupName] = useState('');
@@ -32,9 +37,17 @@ function MyContactsPage() {
   const [groupAdminEmail, setGroupAdminEmail] = useState('');
   const [groupId, setGroupId] = useState('');
   const [groupAvatar, setGroupAvatar] = useState('');
+  const [channels, setChannels] = useState([]);
+  const [filteredChannels, setFilteredChannels] = useState([]);
+  const [channelName, setChannelName] = useState('');
+  const [channelAdmin, setChannelAdmin] = useState('');
+  const [channelAdminName, setChannelAdminName] = useState('');
+  const [channelAdminEmail, setChannelAdminEmail] = useState('');
+  const [channelId, setChannelId] = useState('');
+  const [channelAvatar, setChannelAvatar] = useState('');
 
   const stylesHome = {
-    display: invisibleHome || !invisibleGroup ? 'none' : 'flex',
+    display: invisibleHome || !invisibleGroup || !invisibleChannel ? 'none' : 'flex',
   };
 
   const getAuthUser = async () => {
@@ -71,6 +84,8 @@ function MyContactsPage() {
     };
     auth();
   }, []);
+  const myName = userData.displayName;
+  const myEmail = userData.email;
 
   useEffect(() => {
     if (!currentAuth) {
@@ -83,6 +98,26 @@ function MyContactsPage() {
     };
     getContacts();
   }, [currentAuth]);
+
+  useEffect(() => {
+    if (!currentAuth) {
+      return;
+    }
+    const getChannels = async () => {
+      const data = await getDocs(collection(db, `users/${currentAuth}/channelContacts`));
+      // eslint-disable-next-line no-shadow
+      setChannels(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    };
+    getChannels();
+  }, [currentAuth]);
+
+  useEffect(() => {
+    setFilteredChannels(
+      channels.filter(
+        (channel) => channel.channelName.toLowerCase().includes(searchValue.toLowerCase()),
+      ),
+    );
+  }, [searchValue, channels]);
 
   useEffect(() => {
     if (!currentAuth) {
@@ -110,6 +145,7 @@ function MyContactsPage() {
   const showContactsList = () => {
     setInvisibleGroup(true);
     setInvisibleHome(false);
+    setInvisibleChannel(true);
   };
 
   const showContact = async (id) => {
@@ -122,6 +158,41 @@ function MyContactsPage() {
     setInvisibleHome(true);
     setInvisibleGroup(true);
   };
+  const blockContact = async (id, displayName, email) => {
+    const blockDialogsRef = doc(db, `users/${id}/contacts/${currentAuth}`);
+    await setDoc(blockDialogsRef, {
+      displayName: myName,
+      email: myEmail,
+      blocked: 1,
+    }, { merge: true });
+    const blockDialogsRef1 = doc(db, `users/${currentAuth}/contacts/${id}`);
+    await setDoc(blockDialogsRef1, {
+      displayName,
+      email,
+      icon: 0,
+    }, { merge: true });
+    const data = await getDocs(collection(db, `users/${currentAuth}/contacts`));
+    // eslint-disable-next-line no-shadow
+    setContacts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  };
+  const unLockContact = async (id, displayName, email) => {
+    const blockRef = doc(db, `users/${id}/contacts/${currentAuth}`);
+    await setDoc(blockRef, {
+      displayName: myName,
+      email: myEmail,
+      blocked: 0,
+    }, { merge: true });
+    const blockDialogsRef1 = doc(db, `users/${currentAuth}/contacts/${id}`);
+    await setDoc(blockDialogsRef1, {
+      displayName,
+      email,
+      icon: 1,
+    }, { merge: true });
+    const data = await getDocs(collection(db, `users/${currentAuth}/contacts`));
+    // eslint-disable-next-line no-shadow
+    setContacts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+  };
+
   const showGroup = async (id) => {
     const groupRef = doc(db, `groups/${id}`);
     const docSnap = await getDoc(groupRef);
@@ -133,6 +204,18 @@ function MyContactsPage() {
     setGroupId(id);
     setInvisibleHome(false);
     setInvisibleGroup(false);
+  };
+  const showChannel = async (id) => {
+    const groupRef = doc(db, `channels/${id}`);
+    const docSnap = await getDoc(groupRef);
+    await setChannelName(docSnap.data().channelName);
+    await setChannelAdmin(docSnap.data().channelAdmin);
+    await setChannelAdminName(docSnap.data().adminName);
+    await setChannelAvatar(docSnap.data().channelAvatar);
+    await setChannelAdminEmail(docSnap.data().adminEmail);
+    setChannelId(id);
+    setInvisibleHome(false);
+    setInvisibleChannel(false);
   };
 
   const logout = () => {
@@ -159,6 +242,19 @@ function MyContactsPage() {
             adminEmail={groupAdminEmail}
             groupId={groupId}
             groupAvatar={groupAvatar}
+            showContactsList={showContactsList}
+          />
+          )
+      }
+      {
+          !invisibleChannel && (
+          <ChannelPage
+            channelName={channelName}
+            channelAdmin={channelAdmin}
+            adminName={channelAdminName}
+            adminEmail={channelAdminEmail}
+            channelId={channelId}
+            channelAvatar={channelAvatar}
             showContactsList={showContactsList}
           />
           )
@@ -195,11 +291,25 @@ function MyContactsPage() {
             </Link>
           </div>
           <div className="my-groups-wrapper">
+            <div className="my-groups-title">My channels</div>
+            <Link to="/channelslist">
+              <FontAwesomeIcon icon={faUserGroup} />
+            </Link>
+          </div>
+
+          <div className="my-groups-wrapper">
             <div className="my-groups-title">Create group</div>
             <Link to="/group">
               <FontAwesomeIcon icon={faUserGroup} />
             </Link>
           </div>
+          <div className="my-groups-wrapper">
+            <div className="my-groups-title">Create channel</div>
+            <Link to="/channel">
+              <FontAwesomeIcon icon={faUserGroup} />
+            </Link>
+          </div>
+
         </div>
 
         <div className="users-list">
@@ -209,16 +319,130 @@ function MyContactsPage() {
                   key={contact.id}
                   className="user-wrapper"
                 >
-                  <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={() => showContact(contact.id)}>
-                    <img className="user-avatar" src={avatar} alt="avatar" />
-                  </button>
-                  <div className="user-info">
-                    <div className="project-main">{contact.displayName}</div>
-                    <div className="user-email">{contact.email}</div>
-                  </div>
+                  {
+                    contact.blocked === 1
+                      ? (
+                        <div className="user-info-blocked">
+                          <div className="user-blocked-image">
+                            <img src={youBlocked} alt="blocked" />
+                          </div>
+                          <div className="blocked-info">
+                            <div className="project-main">{contact.displayName}</div>
+                            <div className="blocked-info-title">you cannot see this contact</div>
+                          </div>
+                        </div>
+                      )
+                      : (
+                        <div className="user-info-unlocked">
+                          {
+                            contact.icon === 0
+                              ? <img className="user-avatar" src={unknown} alt="unknown" />
+                              : (
+                                <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={() => showContact(contact.id)}>
+                                  <img className="user-avatar" src={avatar} alt="avatar" />
+                                </button>
+                              )
+
+                          }
+                          <div className="user-info">
+                            <div className="project-main">{contact.displayName}</div>
+                            <div className="user-email">{contact.email}</div>
+                            {/* eslint-disable-next-line react/jsx-no-comment-textnodes */}
+                          </div>
+                          <div>
+                            {
+                              contact.icon === 0 && (
+                              <div>
+                                {/* eslint-disable-next-line max-len */}
+                                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+                                <img
+                                  className="image-block"
+                                  src={unlockIcon}
+                                  alt="unlock"
+                                    /* eslint-disable-next-line max-len */
+                                  onClick={() => unLockContact(contact.id, contact.displayName, contact.email)}
+                                    /* eslint-disable-next-line max-len */
+                                  onKeyUp={() => unLockContact(contact.id, contact.displayName, contact.email)}
+                                />
+                              </div>
+                              )
+                            }
+                            {
+                                contact.icon === 1 && (
+                                <div>
+                                  <FontAwesomeIcon
+                                    className="image-block"
+                                    icon={faUserLock}
+                                      /* eslint-disable-next-line max-len */
+                                    onClick={() => blockContact(contact.id, contact.displayName, contact.email)}
+                                      /* eslint-disable-next-line max-len */
+                                    onKeyUp={() => blockContact(contact.id, contact.displayName, contact.email)}
+                                  />
+                                </div>
+                                )
+                            }
+
+                          </div>
+                        </div>
+                      )
+                  }
                 </div>
               ))
             }
+          {
+            filteredChannels.map((channel) => (
+              <div
+                key={channel.id}
+                className="user-wrapper"
+              >
+                {
+                  channel.blocked === 1
+                    ? (
+                      <div className="user-info-blocked">
+                        <div className="user-blocked-image">
+                          <img src={youBlocked} alt="blocked" />
+                        </div>
+                        <div className="blocked-info">
+                          <div className="project-main">{channel.channelName}</div>
+                          <div className="blocked-info-title">you cannot see this channel</div>
+                        </div>
+                      </div>
+                    )
+                    : (
+                      <div className="channel-unlocked-wrapper">
+                        {
+                          !channel.channelAvatar ? (
+                          // eslint-disable-next-line max-len
+                          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                            <img
+                              className="user-avatar"
+                              src={avatar}
+                              alt="avatar"
+                              onClick={() => showChannel(channel.id)}
+                              onKeyUp={() => showGroup(channel.id)}
+                            />
+                          ) : (
+                          // eslint-disable-next-line max-len
+                          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                            <img
+                              className="user-avatar"
+                              src={channel.channelAvatar}
+                              alt="avatar"
+                                   /* eslint-disable-next-line max-len */
+                              onClick={() => showChannel(channel.id)}
+                              onKeyUp={() => showChannel(channel.id)}
+                            />
+                          )
+}
+                        <div className="user-info">
+                          <div className="project-main">{channel.channelName}</div>
+                        </div>
+                      </div>
+                    )
+                }
+              </div>
+            ))
+          }
           {
             groups.map((group) => (
               <div key={group.id} className="user-wrapper">
@@ -232,7 +456,6 @@ function MyContactsPage() {
                 <div className="user-info">
                   <div className="project-main">{group.groupName}</div>
                 </div>
-
               </div>
             ))
           }

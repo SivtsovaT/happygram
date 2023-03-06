@@ -118,7 +118,6 @@ function AdminGroupPage({
 
   return (
     <div className="content">
-
       {
         findPanelVisible
           && (
@@ -128,7 +127,6 @@ function AdminGroupPage({
               <div className="link-left" onClick={showHome} onKeyUp={showHome} style={{ marginRight: '10px' }}>
                 <img src={back} alt="back" />
               </div>
-
               <div className="password-wrapper">
                 <input
                   style={{ height: '36px', width: '100px' }}
@@ -145,8 +143,7 @@ function AdminGroupPage({
               }
               <FontAwesomeIcon icon={faUserGroup} onClick={toggleGroupContent} onKeyUp={toggleGroupContent} style={{ marginLeft: '5px' }} />
             </div>
-
-            <div className="users-list">
+            <div className="users-list" style={{ marginLeft: '30px' }}>
               <div className="user-wrapper">
                 <img className="user-avatar" src={avatar} alt="avatar" />
                 <div className="user-info">
@@ -159,7 +156,6 @@ function AdminGroupPage({
                   <FontAwesomeIcon icon={faUserPlus} />
                 </button>
               </div>
-
               {
                     filteredContacts.map((contact) => (
                       <div key={contact.id} className="user-wrapper">
@@ -175,9 +171,7 @@ function AdminGroupPage({
                     ))
                   }
             </div>
-
           </div>
-
           )
       }
       {
@@ -189,7 +183,6 @@ function AdminGroupPage({
               <div className="link-left" onClick={showHome} onKeyUp={showHome}>
                 <img src={back} alt="back" />
               </div>
-
               <div className="group-name-members">{groupName}</div>
               {
                 groupAvatar ? <img className="group-image" src={groupAvatar} alt="avatar" /> : <img className="group-image" src={avatar} alt="avatar" />
@@ -197,7 +190,7 @@ function AdminGroupPage({
               <FontAwesomeIcon icon={faUserGroup} onClick={toggleGroupContent} onKeyUp={toggleGroupContent} style={{ marginLeft: '50px' }} />
             </div>
             <div className="group-members">Members of the group</div>
-            <div className="users-list">
+            <div className="users-list" style={{ marginLeft: '30px' }}>
               <div className="user-wrapper">
                 <img className="user-avatar" src={avatar} alt="avatar" />
                 <div className="user-info">
@@ -207,7 +200,6 @@ function AdminGroupPage({
                 {' '}
                 (admin)
               </div>
-
               {
                     groupUsers.map((groupUser) => (
                       <div key={groupUser.id} className="user-wrapper">
@@ -219,7 +211,6 @@ function AdminGroupPage({
                         <button type="button" className="btn btn-28" style={{ marginLeft: '80px' }} onClick={() => deleteContact(groupUser.id, groupUser.displayName, groupUser.email)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
-
                       </div>
                     ))
                   }
@@ -227,7 +218,6 @@ function AdminGroupPage({
           </div>
           )
       }
-
     </div>
   );
 }

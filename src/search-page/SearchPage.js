@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './SearchPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
-  doc, collection, getDocs, query, setDoc, getDoc,
+  doc, collection, getDocs, query, setDoc, getDoc, where,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
@@ -16,6 +16,8 @@ function SearchPage() {
   const [users, setUsers] = useState([]);
   const [searchValue, setSearchValue] = useState('');
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [channels, setChannels] = useState([]);
+  const [filteredChannels, setFilteredChannels] = useState([]);
   const [currentAuth, setCurrentAuth] = useState(null);
   const [userData, setUserData] = useState([]);
 
@@ -52,8 +54,23 @@ function SearchPage() {
     };
     auth();
   }, []);
+  useEffect(() => {
+    if (!currentAuth) {
+      return;
+    }
+    const getNut = async () => {
+      const q = query(collection(db, 'channels', 'contacts'), where('channelAdmin', '==', currentAuth));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setChannels(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getNut();
+  }, [currentAuth]);
 
   const myName = userData.displayName;
+  const myEmail = userData.email;
 
   useEffect(() => {
     const getUsers = async () => {
@@ -66,6 +83,17 @@ function SearchPage() {
     };
     getUsers();
   }, []);
+  useEffect(() => {
+    const getChannels = async () => {
+      const q = query(collection(db, 'channels'));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setChannels(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getChannels();
+  }, []);
 
   useEffect(() => {
     setFilteredUsers(
@@ -75,13 +103,37 @@ function SearchPage() {
     );
   }, [searchValue, users]);
 
+  useEffect(() => {
+    setFilteredChannels(
+      channels.filter(
+        (channel) => channel.channelName.toLowerCase().includes(searchValue.toLowerCase()),
+      ),
+    );
+  }, [searchValue, users]);
+
   const addUserToContacts = async (id, displayName, email) => {
-    const contactId = id;
-    const contactRef = doc(db, `users/${currentAuth}/contacts/${contactId}`);
+    const contactRef = doc(db, `users/${currentAuth}/contacts/${id}`);
     await setDoc(contactRef, {
       displayName,
       email,
+      id,
+      blocked: 0,
+      icon: 1,
     }, { merge: true });
+  };
+  const subscrube = async (id, channelName, channelAvatar) => {
+    const contactRef = doc(db, `users/${currentAuth}/channelContacts/${id}`);
+    await setDoc(contactRef, {
+      channelName,
+      channelAvatar,
+    }, { merge: true });
+    const groupRef1 = doc(db, `channels/${id}/contacts/${currentAuth}`);
+    await setDoc(groupRef1, {
+      id: currentAuth,
+      displayName: myName,
+      email: myEmail,
+    }, { merge: true });
+    window.location.replace('/contacts');
   };
 
   const showNextPage = (event) => {
@@ -131,6 +183,28 @@ function SearchPage() {
                       </button>
                     )
                 }
+            </div>
+          ))
+        }
+        {
+          filteredChannels.map((filteredChannel) => (
+            <div key={filteredChannel.id} className="user-wrapper">
+              <img className="user-avatar" src={avatar} alt="avatar" />
+              <div className="user-info">
+                <div className="project-main">{filteredChannel.channelName}</div>
+              </div>
+              <button
+                className="btn phone-btn"
+                type="button"
+                  // className="btn btn-28"
+                style={{ marginLeft: '80px', background: '#86cc18', color: 'white' }}
+                onClick={() => {
+                  // eslint-disable-next-line max-len
+                  subscrube(filteredChannel.id, filteredChannel.channelName, filteredChannel.channelAvatar);
+                }}
+              >
+                Subscribe
+              </button>
             </div>
           ))
         }
