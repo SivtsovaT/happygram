@@ -3,7 +3,7 @@ import './GroupPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
   addDoc,
-  collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp,
+  collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,6 +15,7 @@ import { faPaperPlane } from '@fortawesome/free-solid-svg-icons/faPaperPlane';
 import { saveAs } from 'file-saver';
 import moment from 'moment/moment';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { faPersonWalking } from '@fortawesome/free-solid-svg-icons/faPersonWalking';
 import avatar from '../images/create-group-page/group.png';
 import { db, storage } from '../firebase';
 import back from '../images/back.png';
@@ -357,6 +358,16 @@ function GroupPage({
     setMainSendInputVisible(false);
     setReplySendInputVisible(true);
   };
+  const leaveTheGroup = async () => {
+    const groupRef = doc(db, `users/${currentAuth}/groupContacts/${groupId}`);
+    await deleteDoc(groupRef);
+    const groupRef1 = doc(db, `groups/${groupId}/contacts/${currentAuth}`);
+    await deleteDoc(groupRef1);
+    const data = await getDocs(collection(db, `groups/${groupId}/contacts`));
+    // eslint-disable-next-line no-shadow
+    await setGroupUsers(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    window.location.replace('/contacts');
+  };
 
   return (
     <>
@@ -384,8 +395,17 @@ function GroupPage({
               groupAvatar ? <img className="group-image" src={groupAvatar} alt="avatar" /> : <img className="group-image" src={avatar} alt="avatar" />
             }
           </div>
-          {/* eslint-disable-next-line max-len */}
-          <FontAwesomeIcon icon={faUserGroup} onClick={toggleGroupContent} onKeyUp={toggleGroupContent} style={{ marginTop: '10px', marginLeft: '300px' }} />
+          <div className="buttons-pannel">
+            {/* eslint-disable-next-line max-len */}
+            {
+              adminName !== myName && (
+              <button className="btn btn-28" type="button" onClick={leaveTheGroup}>
+                <FontAwesomeIcon icon={faPersonWalking} />
+              </button>
+              )
+            }
+            <FontAwesomeIcon icon={faUserGroup} onClick={toggleGroupContent} onKeyUp={toggleGroupContent} style={{ marginTop: '10px', marginLeft: '300px' }} />
+          </div>
             {
               groupContactsVisible
                 && (
