@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import './GroupsListPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
-  collection, doc, getDoc, getDocs, query, where,
+  collection, deleteDoc, doc, getDoc, getDocs, query, where,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
 import { Link } from 'react-router-dom';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { db } from '../firebase';
 import back from '../images/back.png';
 import avatar from '../images/create-group-page/group.png';
@@ -102,6 +103,20 @@ function GroupsListPage() {
   const showHome = () => {
     setInvisibleHome((prevState) => !prevState);
   };
+  const deleteGroup = async (id) => {
+    const groupRef = doc(db, `groups/${id}`);
+    await deleteDoc(groupRef);
+    const q = query(collection(db, 'groups'), where('groupAdmin', '==', currentAuth));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setGroups(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    const groupRef1 = doc(db, `users/${currentAuth}/groupContacts/${id}`);
+    await deleteDoc(groupRef1);
+    const groupRef2 = doc(db, `groups/${id}/contacts/${currentAuth}`);
+    await deleteDoc(groupRef2);
+  };
 
   return (
     <>
@@ -144,15 +159,36 @@ function GroupsListPage() {
           {
               filteredGroups.map((filteredGroup) => (
                 // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-                <div key={filteredGroup.id} className="user-wrapper" onClick={() => showGroup(filteredGroup.id)} onKeyUp={() => showGroup(filteredGroup.id)}>
+                <div key={filteredGroup.id} className="user-wrapper" style={{ position: 'relative' }}>
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   {
-                    filteredGroup.groupAvatar ? <img className="user-avatar" src={filteredGroup.groupAvatar} alt="avatar" />
-                      : <img className="user-avatar" src={avatar} alt="avatar" />
+                    filteredGroup.groupAvatar ? (
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                      <img
+                        className="user-avatar"
+                        src={filteredGroup.groupAvatar}
+                        alt="avatar"
+                        onClick={() => showGroup(filteredGroup.id)}
+                        onKeyUp={() => showGroup(filteredGroup.id)}
+                      />
+                    )
+                      : (
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                        <img
+                          className="user-avatar"
+                          src={avatar}
+                          alt="avatar"
+                          onClick={() => showGroup(filteredGroup.id)}
+                          onKeyUp={() => showGroup(filteredGroup.id)}
+                        />
+                      )
                   }
                   <div className="user-info">
                     <div className="project-main">{filteredGroup.groupName}</div>
                   </div>
+                  <button type="button" style={{ position: 'absolute', right: '10px' }} className="btn btn-28" onClick={() => deleteGroup(filteredGroup.id)}>
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
                 </div>
               ))
             }
