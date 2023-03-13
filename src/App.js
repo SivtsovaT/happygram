@@ -10,6 +10,8 @@ import ResetPasswordPage from './reset-password-page/ResetPasswordPage';
 import MyContactsPage from './my-contacts-page/MyContactsPage';
 import CreateGroupPage from './create-group-page/CreateGroupPage';
 import GroupsListPage from './groups-list-page/GroupsListPage';
+import CreateChannelPage from './create-channel-page/CreateChannelPage';
+import ChannelsListPage from './channels-list-page/ChannelsListPage';
 
 function App() {
   return (
@@ -23,6 +25,9 @@ function App() {
       <Route path="contacts" element={<MyContactsPage />} />
       <Route path="group" element={<CreateGroupPage />} />
       <Route path="groupslist" element={<GroupsListPage />} />
+      <Route path="channel" element={<CreateChannelPage />} />
+      <Route path="channelslist" element={<ChannelsListPage />} />
+
     </Routes>
   );
 }

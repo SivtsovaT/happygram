@@ -45,16 +45,65 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		width: 120px;
+		width: 100px;
 		height: 30px;
 		border: 2px deeppink solid;
 		border-radius: 10px;
+		padding-right: 5px;
 		.my-groups-title {
-			font-size: 14px;
+			font-size: 12px;
 			color: var(--main-font-color);
 			font-weight: 700;
-			margin-right: 10px;
+			margin-left: 10px;
 		}
 	}
-
+}
+.channel-unlocked-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.image-block {
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	left: 295px;
+}
+.user-info-unlocked {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+}
+.user-info-blocked {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	.user-blocked-image {
+		width: 100px;
+		height: 55px;
+		border: 1px deeppink solid;
+		border-radius: 25px;
+		margin-left: 10px;
+		margin-right: 10px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		img {
+			width: 73px;
+			height: 50px;
+		}
+	}
+	.blocked-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		.blocked-info-title {
+			font-size: 12px;
+			color: var(--main-font-color);
+			font-weight: 700;
+			margin-left: 10px;
+		}
+	}
 }
