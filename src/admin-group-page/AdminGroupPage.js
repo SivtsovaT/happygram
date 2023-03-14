@@ -97,6 +97,7 @@ function AdminGroupPage({
     await setDoc(groupRef, {
       groupName,
       groupAvatar,
+      pin: 0,
     }, { merge: true });
     const groupRef1 = doc(db, `groups/${groupId}/contacts/${id}`);
     await setDoc(groupRef1, {
