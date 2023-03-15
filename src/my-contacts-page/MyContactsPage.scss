@@ -62,12 +62,14 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	position: relative;
 }
 .image-block {
-	width: 30px;
-	height: 30px;
+	width: 20px;
+	height: 20px;
 	position: absolute;
-	left: 295px;
+	left: 300px;
+	top: 35px;
 }
 .user-info-unlocked {
 	display: flex;
@@ -99,11 +101,50 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		position: relative;
 		.blocked-info-title {
 			font-size: 12px;
 			color: var(--main-font-color);
 			font-weight: 700;
 			margin-left: 10px;
 		}
+	}
+}
+.pin-icon {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	left: 300px;
+	top: -5px;
+}
+.pin-icon-blocked {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: -45px;
+	top: -10px;
+}
+.channel-pin-icon {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: -137px;
+	top: -10px;
+}
+.channel-pin-icon-blocked {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	right: -40px;
+	top: -15px;
+}
+.group-info {
+	display: flex;
+	justify-content: space-between;
+	width: 251px;
+	margin-left: 10px;
+	.pin-group-icon {
+		width: 20px;
+		height: 20px;
 	}
 }

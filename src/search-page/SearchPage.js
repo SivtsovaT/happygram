@@ -119,6 +119,7 @@ function SearchPage() {
       id,
       blocked: 0,
       icon: 1,
+      pin: 0,
     }, { merge: true });
   };
   const subscrube = async (id, channelName, channelAvatar) => {
@@ -126,6 +127,7 @@ function SearchPage() {
     await setDoc(contactRef, {
       channelName,
       channelAvatar,
+      pin: 0,
     }, { merge: true });
     const groupRef1 = doc(db, `channels/${id}/contacts/${currentAuth}`);
     await setDoc(groupRef1, {
