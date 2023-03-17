@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './MessagesPage.scss';
 import {
-  addDoc, collection, getDocs, query, serverTimestamp, orderBy, doc, getDoc,
+  addDoc, collection, getDocs, query, serverTimestamp, orderBy, doc, getDoc, where, deleteDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,7 +10,7 @@ import moment from 'moment';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
   faArrowTurnRight, faClose,
-  faDownload, faFile, faImage, faPaperclip, faVideo,
+  faDownload, faFile, faImage, faPaperclip, faTrash, faVideo,
 } from '@fortawesome/free-solid-svg-icons';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { saveAs } from 'file-saver';
@@ -41,6 +41,8 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [replyFile, setReplyFile] = useState('');
   const [mainSendInputVisible, setMainSendInputVisible] = useState(true);
   const [replySendInputVisible, setReplySendInputVisible] = useState(false);
+  const [sentMes, setSentMes] = useState([]);
+  const [resMes, setResMes] = useState([]);
 
   useEffect(() => {
     const auth = getAuth();
@@ -56,6 +58,34 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       await setUsId(userId);
     };
     getMessages();
+  }, [currentAuth]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const getSentMessages = async () => {
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setSentMes(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getSentMessages();
+  }, [currentAuth]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const getReceivedMessages = async () => {
+      const q = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setResMes(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getReceivedMessages();
   }, [currentAuth]);
 
   const stylesMessages = {
@@ -196,6 +226,19 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       });
       setImage('');
       setDownloadImageVisible(false);
+      const q1 = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+      const querySnapshot1 = await getDocs(q1);
+      querySnapshot1.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setSentMes(querySnapshot1.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setResMes(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
       setHttpPending(false);
       // eslint-disable-next-line no-shadow
     } catch (e) {
@@ -230,6 +273,19 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       });
       setImage('');
       setDownloadImageVisible(false);
+      const q1 = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+      const querySnapshot1 = await getDocs(q1);
+      querySnapshot1.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setSentMes(querySnapshot1.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setResMes(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
       setHttpPending(false);
       // eslint-disable-next-line no-shadow
     } catch (e) {
@@ -264,6 +320,19 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       });
       setImage('');
       setDownloadImageVisible(false);
+      const q1 = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+      const querySnapshot1 = await getDocs(q1);
+      querySnapshot1.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setSentMes(querySnapshot1.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setResMes(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
       setHttpPending(false);
       // eslint-disable-next-line no-shadow
     } catch (e) {
@@ -297,6 +366,18 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         // eslint-disable-next-line no-shadow
         setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       });
+      const q1 = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+      const querySnapshot1 = await getDocs(q1);
+      querySnapshot1.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setSentMes(querySnapshot1.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setResMes(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
       setHttpPending(false);
       setInputMessage('');
       setSendButtonVisible(false);
@@ -306,6 +387,61 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setHttpPending(false);
     }
   };
+
+  // eslint-disable-next-line no-unused-vars,no-shadow
+  async function deleteCollection() {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setSentMes(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    // eslint-disable-next-line no-restricted-syntax
+    for (const message of sentMes) {
+      const messageId = message.id;
+      const itemRef = doc(db, `messages/${messageId}`);
+      /* eslint-disable */
+      await deleteDoc(itemRef);
+      const q = query(collection(db, 'messages'), orderBy('created'));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    }
+    const q1 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId));
+    const querySnapshot1 = await getDocs(q1);
+    querySnapshot1.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setResMes(querySnapshot1.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+    // eslint-disable-next-line no-restricted-syntax
+    for (const message of resMes) {
+      const messageId = message.id;
+      const itemRef = doc(db, `messages/${messageId}`);
+      /* eslint-disable */
+      await deleteDoc(itemRef);
+      const q = query(collection(db, 'messages'), orderBy('created'));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    }
+  }
+  const deleteMessage = async (id) => {
+    const messageRef = doc(db, `messages/${id}`);
+    await deleteDoc(messageRef);
+    const q = query(collection(db, 'messages'), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
+
 
   return (
     <>
@@ -323,6 +459,13 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         </button>
         <div className="project-header">{contactDisplayName}</div>
         <div className="message-list">
+          {/*<button type="button" onClick={deleteCollection}>delete</button>*/}
+          <FontAwesomeIcon
+              icon={faTrash}
+              onClick={deleteCollection}
+              onKeyUp={deleteCollection}
+              style={{marginBottom: '10px', cursor: 'pointer'}}
+          />
           {
             messages.map((mes) => (
               <div key={mes.id}>
@@ -359,6 +502,9 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                               className="message-time"
                             >
                               {moment(mes.created.toDate()).calendar()}
+                            </div>
+                            <div className="message-close" onClick={() => deleteMessage(mes.id)}>
+                              <FontAwesomeIcon icon={faClose} />
                             </div>
                             {
                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
@@ -442,6 +588,9 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                 className="message-time"
                               >
                                 {moment(mes.created.toDate()).calendar()}
+                              </div>
+                              <div className="message-close" onClick={() => deleteMessage(mes.id)}>
+                                <FontAwesomeIcon icon={faClose} />
                               </div>
                               {
                                 // eslint-disable-next-line jsx-a11y/img-redundant-alt

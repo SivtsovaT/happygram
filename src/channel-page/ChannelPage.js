@@ -12,7 +12,7 @@ import {
   faClose,
   faDownload,
   faFile,
-  faImage, faPaperclip,
+  faImage, faPaperclip, faTrash,
   faUserGroup,
   faVideo,
 } from '@fortawesome/free-solid-svg-icons';
@@ -182,8 +182,8 @@ function ChannelPage({
   };
 
   const showImage = async (id) => {
-    const contactRef = doc(db, `channels/${channelId}/messages/${id}`);
-    const docSnap = await getDoc(contactRef);
+    const imageRef = doc(db, `channels/${channelId}/messages/${id}`);
+    const docSnap = await getDoc(imageRef);
     await setMessageImage(docSnap.data().attachments);
     setInvisibleChannel(true);
   };
@@ -347,14 +347,35 @@ function ChannelPage({
     setReplySendInputVisible(true);
   };
   const leaveTheChannel = async () => {
-    const groupRef = doc(db, `users/${currentAuth}/channelContacts/${channelId}`);
-    await deleteDoc(groupRef);
-    const groupRef1 = doc(db, `channels/${channelId}/contacts/${currentAuth}`);
-    await deleteDoc(groupRef1);
+    const channelRef = doc(db, `users/${currentAuth}/channelContacts/${channelId}`);
+    await deleteDoc(channelRef);
+    const channelRef1 = doc(db, `channels/${channelId}/contacts/${currentAuth}`);
+    await deleteDoc(channelRef1);
     const data = await getDocs(collection(db, `channels/${channelId}/contacts`));
     // eslint-disable-next-line no-shadow
     await setChannelUsers(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     window.location.replace('/contacts');
+  };
+  const deleteMessage = async (id) => {
+    const channelRef = doc(db, `channels/${channelId}/messages/${id}`);
+    await deleteDoc(channelRef);
+    const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
+  const deleteChat = async () => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const message of messages) {
+      const messageId = message.id;
+      const itemRef = doc(db, `channels/${channelId}/messages/${messageId}`);
+      /* eslint-disable */
+      await deleteDoc(itemRef);
+      const data = await getDocs(collection(db, `channels/${channelId}/messages`));
+      setMessages(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    }
   };
 
   return (
@@ -419,6 +440,16 @@ function ChannelPage({
                             channelMessagesVisible
                             && (
                             <div>
+                              {
+                                  adminName === myName && (
+                                      <FontAwesomeIcon
+                                          icon={faTrash}
+                                          onClick={deleteChat}
+                                          onKeyUp={deleteChat}
+                                          style={{ marginBottom: '10px', cursor: 'pointer' }}
+                                      />
+                                  )
+                              }
                               <div className="message-list">
                                 {
                                 messages.map((mes) => (
@@ -471,6 +502,19 @@ function ChannelPage({
                                         >
                                           {moment(mes.created.toDate()).calendar()}
                                         </div>
+                                        {
+                                            adminName === myName && (
+                                                // eslint-disable-next-line max-len
+                                                // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events
+                                                <div
+                                                    className="group-message-close"
+                                                    onClick={() => deleteMessage(mes.id)}
+                                                >
+                                                  <FontAwesomeIcon icon={faClose} />
+                                                </div>
+                                            )
+                                        }
+
                                         {
                                           // eslint-disable-next-line max-len
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt

@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowTurnRight, faClose,
   faDownload,
-  faFile, faImage, faPaperclip, faUserGroup, faVideo,
+  faFile, faImage, faPaperclip, faTrash, faUserGroup, faVideo,
 } from '@fortawesome/free-solid-svg-icons';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons/faPaperPlane';
 import { saveAs } from 'file-saver';
@@ -195,8 +195,8 @@ function GroupPage({
   };
 
   const showImage = async (id) => {
-    const contactRef = doc(db, `groups/${groupId}/messages/${id}`);
-    const docSnap = await getDoc(contactRef);
+    const imageRef = doc(db, `groups/${groupId}/messages/${id}`);
+    const docSnap = await getDoc(imageRef);
     await setMessageImage(docSnap.data().attachments);
     setInvisibleGroup(true);
   };
@@ -368,6 +368,27 @@ function GroupPage({
     await setGroupUsers(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     window.location.replace('/contacts');
   };
+  const deleteMessage = async (id) => {
+    const groupRef1 = doc(db, `groups/${groupId}/messages/${id}`);
+    await deleteDoc(groupRef1);
+    const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  };
+  const deleteChat = async () => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const message of messages) {
+      const messageId = message.id;
+      const itemRef = doc(db, `groups/${groupId}/messages/${messageId}`);
+      /* eslint-disable */
+      await deleteDoc(itemRef);
+      const data = await getDocs(collection(db, `groups/${groupId}/messages`));
+      setMessages(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    }
+  };
 
   return (
     <>
@@ -439,6 +460,16 @@ function GroupPage({
               <div>
                 <div className="message-list">
                   {
+                    adminName === myName && (
+                    <FontAwesomeIcon
+                      icon={faTrash}
+                      onClick={deleteChat}
+                      onKeyUp={deleteChat}
+                      style={{ marginBottom: '10px', cursor: 'pointer' }}
+                    />
+                    )
+                  }
+                  {
                         messages.map((mes) => (
                           <div key={mes.id}>
                             {
@@ -476,6 +507,15 @@ function GroupPage({
                                         >
                                           {moment(mes.created.toDate()).calendar()}
                                         </div>
+                                        {/* eslint-disable-next-line max-len */}
+                                        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
+                                        <div
+                                          className="group-message-close"
+                                          onClick={() => deleteMessage(mes.id)}
+                                        >
+                                          <FontAwesomeIcon icon={faClose} />
+                                        </div>
+
                                         {
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.attachments ? (
@@ -562,6 +602,18 @@ function GroupPage({
                                           >
                                             {moment(mes.created.toDate()).calendar()}
                                           </div>
+                                          {
+                                            adminName === myName && (
+                                            // eslint-disable-next-line max-len
+                                            // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events
+                                            <div
+                                              className="group-message-close"
+                                              onClick={() => deleteMessage(mes.id)}
+                                            >
+                                              <FontAwesomeIcon icon={faClose} />
+                                            </div>
+                                            )
+                                          }
                                           {
                                             // eslint-disable-next-line max-len
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt

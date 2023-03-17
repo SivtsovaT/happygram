@@ -81,6 +81,7 @@ function AdminGroupPage({
     await setDoc(groupRef, {
       groupName,
       groupAvatar,
+      pin: 0,
     }, { merge: true });
     const data = await getDocs(collection(db, `groups/${groupId}/contacts`));
     // eslint-disable-next-line no-shadow

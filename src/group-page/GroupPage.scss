@@ -42,3 +42,11 @@
 	align-items: center;
 	margin-top: 10px;
 }
+.group-message-close {
+	color: gray;
+	position: absolute;
+	right: 8px;
+	top: 5px;
+	font-size: 12px;
+	cursor: pointer;
+}
