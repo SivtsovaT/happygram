@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import './MessagesPage.scss';
 import {
-  addDoc, collection, getDocs, query, serverTimestamp, orderBy, doc, getDoc, where, deleteDoc,
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  orderBy,
+  doc,
+  getDoc,
+  where,
+  deleteDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,8 +26,11 @@ import {
 import { saveAs } from 'file-saver';
 import back from '../images/back.png';
 import docFlat from '../images/messages-page/doc-flat.png';
+import pinMessage from '../images/my-contacts-page/pin.svg';
+import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
 import { db, storage } from '../firebase';
 import ImageComponent from '../image-component/ImageComponent';
+import Popup from '../popup-page/Popup';
 
 function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [currentAuth] = useState(null);
@@ -43,6 +56,10 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [replySendInputVisible, setReplySendInputVisible] = useState(false);
   const [sentMes, setSentMes] = useState([]);
   const [resMes, setResMes] = useState([]);
+  const [pinnedMessage, setPinnedMessage] = useState([]);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
 
   useEffect(() => {
     const auth = getAuth();
@@ -72,6 +89,26 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       });
     };
     getSentMessages();
+  }, [currentAuth]);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const getPinnedMessages = async () => {
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId), where('pin', '==', 1));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getPinnedMessages();
   }, [currentAuth]);
 
   useEffect(() => {
@@ -217,6 +254,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -264,6 +302,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -311,6 +350,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -359,6 +399,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         replyImg: replyImage || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, 'messages'), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -387,7 +428,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setHttpPending(false);
     }
   };
-
   // eslint-disable-next-line no-unused-vars,no-shadow
   async function deleteCollection() {
     const auth = getAuth();
@@ -430,6 +470,7 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
         setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
       });
     }
+    window.location.replace('/contacts');
   }
   const deleteMessage = async (id) => {
     const messageRef = doc(db, `messages/${id}`);
@@ -441,7 +482,236 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
       setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     });
   };
+  const addMessageToPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `messages/${id}`);
+      await setDoc(messagesRef, {
+        text: text,
+        userId,
+        contactId,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId), where('pin', '==', 1));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
 
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addImageToPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `messages/${id}`);
+      await setDoc(messagesRef, {
+        attachments: attachments,
+        userId,
+        contactId,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId), where('pin', '==', 1));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addFileToPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `messages/${id}`);
+      await setDoc(messagesRef, {
+        file: file,
+        userId,
+        contactId,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId), where('pin', '==', 1));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addVideoToPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `messages/${id}`);
+      await setDoc(messagesRef, {
+        video: video,
+        userId,
+        contactId,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, 'messages'), where('userId', '==', userId), where('contactId', '==', contactId), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+      const q2 = query(collection(db, 'messages'), where('userId', '==', contactId), where('contactId', '==', userId), where('pin', '==', 1));
+      const querySnapshot2 = await getDocs(q2);
+      querySnapshot2.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot2.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+
+  const removeMessageFromPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `messages/${id}`);
+    await setDoc(messagesRef, {
+      text: text,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeImageFromPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `messages/${id}`);
+    await setDoc(messagesRef, {
+      attachments: attachments,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeVideoFromPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `messages/${id}`);
+    await setDoc(messagesRef, {
+      video: video,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+
+  const removeFileFromPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `messages/${id}`);
+    await setDoc(messagesRef, {
+      file: file,
+      userId,
+      contactId,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
 
   return (
     <>
@@ -458,6 +728,79 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
           <img src={back} alt="back" />
         </button>
         <div className="project-header">{contactDisplayName}</div>
+        {
+          pinnedMessageVisible && (
+                <div>
+                  {
+                    pinnedMessage.map((message) => (
+                        <div key={message.id} className="pinned-message-wrapper">
+                          {
+                              message.text && (
+                                  <div>
+                                    <div className="pinned-message-text">{message.text}</div>
+                                    <img src={unpinMessage}
+                                         alt="unpin-message"
+                                         className="unpin-message"
+                                         onClick={() => removeMessageFromPin(message.id, message.text)}
+                                    />
+                                  </div>
+                              )
+                          }
+                          {
+                              message.attachments && (
+                                  <div>
+                                    <img className="pinned-image" src={message.attachments} alt="mesImage"/>
+                                    <img src={unpinMessage}
+                                         alt="unpin-message"
+                                         className="unpin-message"
+                                         onClick={() => removeImageFromPin(message.id, message.attachments)}
+                                    />
+                                  </div>
+                              )
+                          }
+                          {
+                            message.file && (
+                                  <div className="file-wrapper">
+                                    <img
+                                        src={docFlat}
+                                        alt="doc"
+                                        style={{
+                                          width: '30px', height: '30px', marginLeft: '10px', marginRight: '10px',
+                                        }}
+                                    />
+                                    {/* eslint-disable-next-line max-len */}
+                                    <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(message.file)} />
+                                    <img src={unpinMessage}
+                                         alt="unpin-message"
+                                         className="unpin-message"
+                                         onClick={() => removeFileFromPin(message.id, message.file)}
+                                    />
+                                  </div>
+                              )
+                          }
+                          {
+                            message.video && (
+                                  <div>
+                                    <video
+                                        style={messageVideoStyles}
+                                        src={message.video}
+                                        autoPlay={message.video}
+                                        controls
+                                    />
+                                    <img src={unpinMessage}
+                                         alt="unpin-message"
+                                         className="unpin-message"
+                                         onClick={() => removeVideoFromPin(message.id, message.video)}
+                                    />
+                                  </div>
+                              )
+                          }
+                        </div>
+                    ))
+                  }
+                </div>
+            )
+        }
         <div className="message-list">
           {/*<button type="button" onClick={deleteCollection}>delete</button>*/}
           <FontAwesomeIcon
@@ -497,26 +840,40 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                 />
                               ) : null
                             }
-                            <div className="message-text">{mes.text}</div>
-                            <div
-                              className="message-time"
-                            >
-                              {moment(mes.created.toDate()).calendar()}
-                            </div>
+                            {
+                              mes.text && (
+                                    <div>
+                                      <div className="message-text">{mes.text}</div>
+                                      <div
+                                          className="message-time"
+                                      >
+                                        {moment(mes.created.toDate()).calendar()}
+                                      </div>
+                                      <div className="message-close">
+                                        <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addMessageToPin(mes.id, mes.text)} />
+                                      </div>
+                                    </div>
+                                )
+                            }
                             <div className="message-close" onClick={() => deleteMessage(mes.id)}>
                               <FontAwesomeIcon icon={faClose} />
                             </div>
                             {
                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                   mes.attachments ? (
-                                    <button
-                                      style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                      onClick={() => showImage(mes.id)}
-                                      type="button"
-                                    >
-                                      {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                                      <img style={messageImageStyles} src={mes.attachments} alt="image" />
-                                    </button>
+                                          <div>
+                                            <button
+                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                onClick={() => showImage(mes.id)}
+                                                type="button"
+                                            >
+                                              {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                              <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                            </button>
+                                            <div className="message-close">
+                                              <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
+                                            </div>
+                                          </div>
                                   ) : null
                                 }
                             {
@@ -532,26 +889,33 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                   />
                                   {/* eslint-disable-next-line max-len */}
                                   <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                  <div className="message-close">
+                                    <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addFileToPin(mes.id, mes.file)} />
+                                  </div>
                                 </div>
                               ) : null
                             }
-
                             {
                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                               mes.video ? (
-                                <button
-                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                  type="button"
-                                >
-                                  {/* eslint-disable-next-line max-len */}
-                                  { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
-                                  <video
-                                    style={messageVideoStyles}
-                                    src={mes.video}
-                                    autoPlay={mes.video}
-                                    controls
-                                  />
-                                </button>
+                                      <div>
+                                        <button
+                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                            type="button"
+                                        >
+                                          {/* eslint-disable-next-line max-len */}
+                                          { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                          <video
+                                              style={messageVideoStyles}
+                                              src={mes.video}
+                                              autoPlay={mes.video}
+                                              controls
+                                          />
+                                        </button>
+                                        <div className="message-close">
+                                          <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
+                                        </div>
+                                      </div>
                               ) : null
                             }
                           </div>
@@ -582,27 +946,40 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                   />
                                 ) : null
                               }
-
-                              <div className="message-text">{mes.text}</div>
-                              <div
-                                className="message-time"
-                              >
-                                {moment(mes.created.toDate()).calendar()}
-                              </div>
+                              {
+                                mes.text && (
+                                      <div>
+                                        <div className="message-text">{mes.text}</div>
+                                        <div
+                                            className="message-time"
+                                        >
+                                          {moment(mes.created.toDate()).calendar()}
+                                        </div>
+                                        <div className="message-close">
+                                          <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addMessageToPin(mes.id, mes.text)} />
+                                        </div>
+                                      </div>
+                                  )
+                              }
                               <div className="message-close" onClick={() => deleteMessage(mes.id)}>
                                 <FontAwesomeIcon icon={faClose} />
                               </div>
                               {
                                 // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                 mes.attachments ? (
-                                  <button
-                                    style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                    onClick={() => showImage(mes.id)}
-                                    type="button"
-                                  >
-                                    {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                                    <img style={messageImageStyles} src={mes.attachments} alt="image" />
-                                  </button>
+                                    <div>
+                                      <button
+                                          style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                          onClick={() => showImage(mes.id)}
+                                          type="button"
+                                      >
+                                        {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                        <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                      </button>
+                                      <div className="message-close">
+                                        <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
+                                      </div>
+                                    </div>
                                 ) : null
                               }
                               {
@@ -612,28 +989,33 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                                     <img src={docFlat} alt="doc" style={{ width: '30px', height: '30px', marginLeft: '10px' }} />
                                     {/* eslint-disable-next-line max-len */}
                                     <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                    <div className="message-close">
+                                      <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addFileToPin(mes.id, mes.file)} />
+                                    </div>
                                   </div>
                                 ) : null
                               }
-
                               {
                                 // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                 mes.video ? (
-                                  <button
-                                    style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                    onClick={() => showImage(mes.id)}
-                                    type="button"
-                                  >
-                                    {/* eslint-disable-next-line max-len */}
-                                    { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
-                                    <video
-                                      style={messageVideoStyles}
-                                      src={mes.video}
-                                      autoPlay={mes.video}
-                                      controls
-                                    />
-                                  </button>
-
+                                    <div>
+                                      <button
+                                          style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                          type="button"
+                                      >
+                                        {/* eslint-disable-next-line max-len */}
+                                        { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                        <video
+                                            style={messageVideoStyles}
+                                            src={mes.video}
+                                            autoPlay={mes.video}
+                                            controls
+                                        />
+                                      </button>
+                                      <div className="message-close">
+                                        <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
+                                      </div>
+                                    </div>
                                 ) : null
                               }
                             </div>
@@ -687,7 +1069,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                     </div>
                     )
                 }
-
                 <div className="reply-input">
                   <input
                     type="text"
@@ -699,7 +1080,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                   />
                 </div>
               </div>
-
               {
                 sendButtonVisible ? (
                   <button type="button" className="send-btn" onClick={sendMessage}>
@@ -707,10 +1087,8 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                   </button>
                 ) : null
               }
-
             </div>
             )
-
         }
         {
           mainSendInputVisible
@@ -734,7 +1112,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
             </div>
             )
         }
-
         <div className="media-wrapper">
           <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendImageBlock} type="button">
             <FontAwesomeIcon icon={faImage} style={{ width: '20px', height: '20px' }} />
@@ -745,7 +1122,6 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
           <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} onClick={showSendFileBlock} type="button">
             <FontAwesomeIcon icon={faFile} style={{ width: '20px', height: '20px' }} />
           </button>
-
         </div>
         {
           sendImageBlockVisible && (
@@ -800,6 +1176,9 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
                   }
             </div>
             )
+        }
+        {
+            popupVisible && <Popup text={popupMessage} />
         }
       </div>
     </>

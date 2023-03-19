@@ -491,7 +491,7 @@ function MyContactsPage() {
             </Link>
           </div>
         </div>
-        <div className="users-list">
+        <div className="users-list" style={{ height: '600px' }}>
           {
             pinnedContacts.map((pinnedContact) => (
               <div
@@ -997,7 +997,6 @@ function MyContactsPage() {
             ))
           }
         </div>
-        <button type="button" className="btn btn-295">CONTINUE</button>
       </div>
     </>
   );

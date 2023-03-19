@@ -3,7 +3,7 @@ import './GroupPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
   addDoc,
-  collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp,
+  collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -21,6 +21,9 @@ import { db, storage } from '../firebase';
 import back from '../images/back.png';
 import docFlat from '../images/messages-page/doc-flat.png';
 import ImageComponent from '../image-component/ImageComponent';
+import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
+import pinMessage from '../images/my-contacts-page/pin.svg';
+import Popup from '../popup-page/Popup';
 
 function GroupPage({
   groupName, groupId, groupAvatar, showContactsList, adminEmail, adminName,
@@ -49,6 +52,10 @@ function GroupPage({
   const [replySendInputVisible, setReplySendInputVisible] = useState(false);
   const [groupContactsVisible, setGroupContactsVisible] = useState(false);
   const [groupMessagesVisible, setGroupMessagesVisible] = useState(true);
+  const [pinnedMessage, setPinnedMessage] = useState([]);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
 
   const sentStyles = {
     display: 'flex',
@@ -142,6 +149,18 @@ function GroupPage({
     getMessages();
   }, [currentAuth]);
 
+  useEffect(() => {
+    const getPinnedMessages = async () => {
+      const q = query(collection(db, `groups/${groupId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getPinnedMessages();
+  }, [currentAuth]);
+
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
       setImage(e.target.files[0]);
@@ -227,6 +246,7 @@ function GroupPage({
         replyImg: replyImage || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -261,6 +281,7 @@ function GroupPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -295,6 +316,7 @@ function GroupPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -329,6 +351,7 @@ function GroupPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -389,6 +412,206 @@ function GroupPage({
       setMessages(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     }
   };
+  const addMessageToPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        text: text,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${groupId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addImageToPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        attachments: attachments,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+        const q = query(collection(db, `groups/${groupId}/messages`), where('pin', '==', 1));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(() => {
+          // eslint-disable-next-line no-shadow
+          setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+        });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addFileToPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        file: file,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${groupId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addVideoToPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        video: video,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${groupId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const removeMessageFromPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      text: text,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeImageFromPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      attachments: attachments,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeVideoFromPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      video: video,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeFileFromPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${groupId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      file: file,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
 
   return (
     <>
@@ -411,7 +634,6 @@ function GroupPage({
             <div className="group-title">
               <div className="project-main">{groupName}</div>
             </div>
-            {/* <div>{adminName}</div> */}
             {
               groupAvatar ? <img className="group-image" src={groupAvatar} alt="avatar" /> : <img className="group-image" src={avatar} alt="avatar" />
             }
@@ -458,6 +680,79 @@ function GroupPage({
             groupMessagesVisible
               && (
               <div>
+                {
+                    pinnedMessageVisible && (
+                        <div>
+                          {
+                            pinnedMessage.map((message) => (
+                                <div key={message.id} className="pinned-message-wrapper">
+                                  {
+                                      message.text && (
+                                          <div>
+                                            <div className="pinned-message-text">{message.text}</div>
+                                            <img src={unpinMessage}
+                                                 alt="unpin-message"
+                                                 className="unpin-message"
+                                                 onClick={() => removeMessageFromPin(message.id, message.text)}
+                                            />
+                                          </div>
+                                      )
+                                  }
+                                  {
+                                      message.attachments && (
+                                          <div>
+                                            <img className="pinned-image" src={message.attachments} alt="mesImage"/>
+                                            <img src={unpinMessage}
+                                                 alt="unpin-message"
+                                                 className="unpin-message"
+                                                 onClick={() => removeImageFromPin(message.id, message.attachments)}
+                                            />
+                                          </div>
+                                      )
+                                  }
+                                  {
+                                      message.file && (
+                                          <div className="file-wrapper">
+                                            <img
+                                                src={docFlat}
+                                                alt="doc"
+                                                style={{
+                                                  width: '30px', height: '30px', marginLeft: '10px', marginRight: '10px',
+                                                }}
+                                            />
+                                            {/* eslint-disable-next-line max-len */}
+                                            <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(message.file)} />
+                                            <img src={unpinMessage}
+                                                 alt="unpin-message"
+                                                 className="unpin-message"
+                                                 onClick={() => removeFileFromPin(message.id, message.file)}
+                                            />
+                                          </div>
+                                      )
+                                  }
+                                  {
+                                      message.video && (
+                                          <div>
+                                            <video
+                                                style={messageVideoStyles}
+                                                src={message.video}
+                                                autoPlay={message.video}
+                                                controls
+                                            />
+                                            <img src={unpinMessage}
+                                                 alt="unpin-message"
+                                                 className="unpin-message"
+                                                 onClick={() => removeVideoFromPin(message.id, message.video)}
+                                            />
+                                          </div>
+                                      )
+                                  }
+                                </div>
+                            ))
+                          }
+                        </div>
+                    )
+                }
                 <div className="message-list">
                   {
                     adminName === myName && (
@@ -500,13 +795,22 @@ function GroupPage({
                                                 />
                                               ) : null
                                             }
-                                        <div className="message-text">{mes.text}</div>
                                         <div className="message-user-name">{mes.userName}</div>
-                                        <div
-                                          className="message-time"
-                                        >
-                                          {moment(mes.created.toDate()).calendar()}
-                                        </div>
+                                        {
+                                          mes.text && (
+                                                <div>
+                                                  <div className="message-text">{mes.text}</div>
+                                                  <div
+                                                      className="message-time"
+                                                  >
+                                                    {moment(mes.created.toDate()).calendar()}
+                                                  </div>
+                                                  <div className="message-close">
+                                                    <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addMessageToPin(mes.id, mes.text)} />
+                                                  </div>
+                                                </div>
+                                            )
+                                        }
                                         {/* eslint-disable-next-line max-len */}
                                         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */}
                                         <div
@@ -519,15 +823,20 @@ function GroupPage({
                                         {
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.attachments ? (
-                                                <button
-                                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                  onClick={() => showImage(mes.id)}
-                                                  type="button"
-                                                >
-                                                  {/* eslint-disable-next-line max-len */}
-                                                  {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                                                  <img style={messageImageStyles} src={mes.attachments} alt="image" />
-                                                </button>
+                                                      <div>
+                                                        <button
+                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                            onClick={() => showImage(mes.id)}
+                                                            type="button"
+                                                        >
+                                                          {/* eslint-disable-next-line max-len */}
+                                                          {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                                          <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                                        </button>
+                                                        <div className="message-close">
+                                                          <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
+                                                        </div>
+                                                      </div>
                                               ) : null
                                             }
                                         {
@@ -543,26 +852,33 @@ function GroupPage({
                                                   />
                                                   {/* eslint-disable-next-line max-len */}
                                                   <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                                  <div className="message-close">
+                                                    <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addFileToPin(mes.id, mes.file)} />
+                                                  </div>
                                                 </div>
                                               ) : null
                                             }
-
                                         {
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.video ? (
-                                                <button
-                                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                  type="button"
-                                                >
-                                                  {/* eslint-disable-next-line max-len */}
-                                                  { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
-                                                  <video
-                                                    style={messageVideoStyles}
-                                                    src={mes.video}
-                                                    autoPlay={mes.video}
-                                                    controls
-                                                  />
-                                                </button>
+                                                      <div>
+                                                        <button
+                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                            type="button"
+                                                        >
+                                                          {/* eslint-disable-next-line max-len */}
+                                                          { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                                          <video
+                                                              style={messageVideoStyles}
+                                                              src={mes.video}
+                                                              autoPlay={mes.video}
+                                                              controls
+                                                          />
+                                                        </button>
+                                                        <div className="message-close">
+                                                          <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
+                                                        </div>
+                                                      </div>
                                               ) : null
                                             }
                                       </div>
@@ -594,14 +910,23 @@ function GroupPage({
                                                     />
                                                   ) : null
                                                 }
+                                          {
+                                            mes.text && (
+                                                  <div>
+                                                    <div className="message-text">{mes.text}</div>
+                                                    <div className="message-user-name">{mes.userName}</div>
+                                                    <div
+                                                        className="message-time"
+                                                    >
+                                                      {moment(mes.created.toDate()).calendar()}
+                                                    </div>
+                                                    <div className="message-close">
+                                                      <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addMessageToPin(mes.id, mes.text)} />
+                                                    </div>
 
-                                          <div className="message-text">{mes.text}</div>
-                                          <div className="message-user-name">{mes.userName}</div>
-                                          <div
-                                            className="message-time"
-                                          >
-                                            {moment(mes.created.toDate()).calendar()}
-                                          </div>
+                                                  </div>
+                                              )
+                                          }
                                           {
                                             adminName === myName && (
                                             // eslint-disable-next-line max-len
@@ -618,15 +943,21 @@ function GroupPage({
                                             // eslint-disable-next-line max-len
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                                   mes.attachments ? (
-                                                    <button
-                                                      style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                      onClick={() => showImage(mes.id)}
-                                                      type="button"
-                                                    >
-                                                      {/* eslint-disable-next-line max-len */}
-                                                      {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                                                      <img style={messageImageStyles} src={mes.attachments} alt="image" />
-                                                    </button>
+                                                          <div>
+                                                            <button
+                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                                onClick={() => showImage(mes.id)}
+                                                                type="button"
+                                                            >
+                                                              {/* eslint-disable-next-line max-len */}
+                                                              {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                                              <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                                            </button>
+                                                            <div className="message-close">
+                                                              <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
+                                                            </div>
+
+                                                          </div>
                                                   ) : null
                                                 }
                                           {
@@ -637,6 +968,10 @@ function GroupPage({
                                                       <img src={docFlat} alt="doc" style={{ width: '30px', height: '30px', marginLeft: '10px' }} />
                                                       {/* eslint-disable-next-line max-len */}
                                                       <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
+                                                      <div className="message-close">
+                                                        <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addFileToPin(mes.id, mes.file)} />
+                                                      </div>
+
                                                     </div>
                                                   ) : null
                                                 }
@@ -644,20 +979,26 @@ function GroupPage({
                                             // eslint-disable-next-line max-len
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                                   mes.video ? (
-                                                    <button
-                                                      style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                      onClick={() => showImage(mes.id)}
-                                                      type="button"
-                                                    >
-                                                      {/* eslint-disable-next-line max-len */}
-                                                      { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
-                                                      <video
-                                                        style={messageVideoStyles}
-                                                        src={mes.video}
-                                                        autoPlay={mes.video}
-                                                        controls
-                                                      />
-                                                    </button>
+                                                          <div>
+                                                            <button
+                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                                onClick={() => showImage(mes.id)}
+                                                                type="button"
+                                                            >
+                                                              {/* eslint-disable-next-line max-len */}
+                                                              { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */ }
+                                                              <video
+                                                                  style={messageVideoStyles}
+                                                                  src={mes.video}
+                                                                  autoPlay={mes.video}
+                                                                  controls
+                                                              />
+                                                            </button>
+                                                            <div className="message-close">
+                                                              <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
+                                                            </div>
+
+                                                          </div>
 
                                                   ) : null
                                                 }
@@ -724,7 +1065,6 @@ function GroupPage({
                               />
                             </div>
                           </div>
-
                           {
                                 sendButtonVisible ? (
                                   <button type="button" className="send-btn" onClick={sendMessage}>
@@ -732,7 +1072,6 @@ function GroupPage({
                                   </button>
                                 ) : null
                               }
-
                         </div>
                         )
                     }
@@ -825,6 +1164,9 @@ function GroupPage({
                     }
               </div>
               )
+          }
+          {
+              popupVisible && <Popup text={popupMessage} />
           }
         </div>
         )
