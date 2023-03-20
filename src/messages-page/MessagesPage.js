@@ -28,12 +28,14 @@ import back from '../images/back.png';
 import docFlat from '../images/messages-page/doc-flat.png';
 import pinMessage from '../images/my-contacts-page/pin.svg';
 import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
+import backgroundMain from '../images/new-back.jpeg';
 import { db, storage } from '../firebase';
 import ImageComponent from '../image-component/ImageComponent';
 import Popup from '../popup-page/Popup';
 
 function MessagesPage({ contactId, contactDisplayName, showHome }) {
-  const [currentAuth] = useState(null);
+  const [currentAuth, setCurrentAuth] = useState(null);
+  const [userData, setUserData] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [httpPending, setHttpPending] = useState(false);
   const [conId, setConId] = useState([]);
@@ -60,6 +62,42 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
   const [popupMessage, setPopupMessage] = useState('');
   const [popupVisible, setPopupVisible] = useState(false);
   const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
+  const [chooseButtonVisible, setChooseButtonVisible] = useState(true);
+  const [backgroundsVisible, setBackgroundsVisible] = useState(false);
+
+  const getAuthUser = async () => {
+    try {
+      const auth = await getAuth();
+      const userId = auth?.currentUser?.uid || null;
+      setCurrentAuth(userId);
+      if (!userId) {
+        setTimeout(() => {
+          getAuthUser();
+        }, 2000);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  useEffect(() => {
+    if (!currentAuth) {
+      return;
+    }
+    const getUser = async () => {
+      const docRef = doc(db, 'users', currentAuth);
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.data();
+      setUserData(data);
+    };
+    getUser();
+  }, [currentAuth]);
+  useEffect(() => {
+    const auth = async () => {
+      await getAuthUser();
+    };
+    auth();
+  }, []);
+  const myBack = userData.background;
 
   useEffect(() => {
     const auth = getAuth();
@@ -127,7 +165,71 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
 
   const stylesMessages = {
     display: invisibleMessages ? 'none' : 'flex',
+    backgroundImage: `url(${myBack})`,
+    position: 'relative',
   };
+  const showBackgrounds = () => {
+    setChooseButtonVisible(false);
+    setBackgroundsVisible(true);
+  };
+  const hideBackgrounds = () => {
+    setChooseButtonVisible(true);
+    setBackgroundsVisible(false);
+  };
+
+  const chooseBackGroundOne = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundTwo = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://static6.depositphotos.com/1003369/659/i/600/depositphotos_6591667-stock-photo-close-up-of-beautiful-womanish.jpg',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundThree = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://www.canr.msu.edu/contentAsset/image/9c8f1a21-90e3-486d-9ca0-dd4a7b4b439d/fileAsset/filter/Resize,Jpeg/resize_w/750/jpeg_q/80',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundFour = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://bogatyr.club/uploads/posts/2021-11/thumbs/1636931398_64-bogatyr-club-p-fon-gradient-svetlii-64.png',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+
   const sentStyles = {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -728,6 +830,46 @@ function MessagesPage({ contactId, contactDisplayName, showHome }) {
           <img src={back} alt="back" />
         </button>
         <div className="project-header">{contactDisplayName}</div>
+        {
+          chooseButtonVisible && (
+                <button type="button" className="button-back" onClick={showBackgrounds}>Choose background</button>
+            )
+        }
+        {
+          backgroundsVisible && (
+                <div className="choose-back-wrapper">
+                  <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                       alt="choose-img"
+                       className="choose-img"
+                       onClick={chooseBackGroundOne}
+                       onKeyUp={chooseBackGroundOne}
+                  />
+                  <img src="https://static6.depositphotos.com/1003369/659/i/600/depositphotos_6591667-stock-photo-close-up-of-beautiful-womanish.jpg"
+                       alt="choose-img"
+                       className="choose-img"
+                       onClick={chooseBackGroundTwo}
+                       onKeyUp={chooseBackGroundTwo}
+                  />
+                  <img src="https://www.canr.msu.edu/contentAsset/image/9c8f1a21-90e3-486d-9ca0-dd4a7b4b439d/fileAsset/filter/Resize,Jpeg/resize_w/750/jpeg_q/80"
+                       alt="choose-img"
+                       className="choose-img"
+                       onClick={chooseBackGroundThree}
+                       onKeyUp={chooseBackGroundThree}
+                  />
+                  <img src={backgroundMain}
+                       alt="choose-img"
+                       className="choose-img"
+                       onClick={chooseBackGroundFour}
+                       onKeyUp={chooseBackGroundFour}
+                  />
+                  <FontAwesomeIcon icon={faClose}
+                                   style={{cursor: 'pointer'}}
+                                   onClick={hideBackgrounds}
+                                   onKeyUp={hideBackgrounds}
+                  />
+                </div>
+            )
+        }
         {
           pinnedMessageVisible && (
                 <div>

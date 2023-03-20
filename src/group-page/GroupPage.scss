@@ -51,3 +51,40 @@
 	font-size: 12px;
 	cursor: pointer;
 }
+.button-back-group {
+	position: absolute;
+	top: 105px;
+	right: 70px;
+	width: 74px;
+	height: 32px;
+	background: var(--main-red-color);
+	font-size: 9px;
+	font-weight: bold;
+	color: var(--main-white-color);
+	text-transform: uppercase;
+	border: none;
+	border-radius: 20px;
+	cursor: pointer;
+}
+.choose-back-wrapper-group {
+	width: 200px;
+	height: 35px;
+	border: 2px deeppink solid;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	background-color: var(--main-white-color);
+	position: absolute;
+	top: 105px;
+	.choose-img {
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		border: 2px var(--main-font-color) solid;
+		&:hover {
+			width: 40px;
+			height: 40px;
+		}
+	}
+}

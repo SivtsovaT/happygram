@@ -36,6 +36,7 @@ import { db, storage } from '../firebase';
 import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
 import pinMessage from '../images/my-contacts-page/pin.svg';
 import Popup from '../popup-page/Popup';
+import backgroundMain from '../images/new-back.jpeg';
 
 // eslint-disable-next-line max-len
 function ChannelPage({
@@ -70,6 +71,8 @@ function ChannelPage({
   const [popupMessage, setPopupMessage] = useState('');
   const [popupVisible, setPopupVisible] = useState(false);
   const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
+  const [chooseButtonVisible, setChooseButtonVisible] = useState(true);
+  const [backgroundsVisible, setBackgroundsVisible] = useState(false);
 
   const sentMessagesBackground = {
     background: '#FAEBD7',
@@ -121,7 +124,13 @@ function ChannelPage({
     getUser();
   }, [currentAuth]);
   const myName = userData.displayName;
+  const myBack = userData.background;
 
+  const stylesMessages = {
+    backgroundImage: `url(${myBack})`,
+    position: 'relative',
+  };
+  
   useEffect(() => {
     if (!currentAuth) {
       return;
@@ -610,7 +619,66 @@ function ChannelPage({
       window.location.replace('/contacts');
     }, 1000);
   };
-
+  const showBackgrounds = () => {
+    setChooseButtonVisible(false);
+    setBackgroundsVisible(true);
+  };
+  const hideBackgrounds = () => {
+    setChooseButtonVisible(true);
+    setBackgroundsVisible(false);
+  };
+  const chooseBackGroundOne = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundTwo = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://static6.depositphotos.com/1003369/659/i/600/depositphotos_6591667-stock-photo-close-up-of-beautiful-womanish.jpg',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundThree = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://www.canr.msu.edu/contentAsset/image/9c8f1a21-90e3-486d-9ca0-dd4a7b4b439d/fileAsset/filter/Resize,Jpeg/resize_w/750/jpeg_q/80',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
+  const chooseBackGroundFour = async () => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const userRef = doc(db, `users/${userId}`);
+    await setDoc(userRef, {
+      ...userData,
+      background: 'https://bogatyr.club/uploads/posts/2021-11/thumbs/1636931398_64-bogatyr-club-p-fon-gradient-svetlii-64.png',
+    }, { merge: true });
+    const userRef1 = doc(db, `users/${userId}`);
+    const docSnap = await getDoc(userRef1);
+    const data = docSnap.data();
+    setUserData(data);
+  };
   return (
     <>
       {
@@ -623,7 +691,7 @@ function ChannelPage({
             }
       {
                 !invisibleChannel && (
-                <div className="content">
+                <div className="content" style={stylesMessages}>
                   <div className="group-header" key={channelId}>
                     {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
                     <div className="link-left" onClick={showContactsList} onKeyUp={showContactsList}>
@@ -645,6 +713,46 @@ function ChannelPage({
                                 </button>
                                 )
                             }
+                    {
+                        chooseButtonVisible && (
+                            <button type="button" className="button-back-group" onClick={showBackgrounds}>Choose background</button>
+                        )
+                    }
+                    {
+                        backgroundsVisible && (
+                            <div className="choose-back-wrapper-group">
+                              <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                                   alt="choose-img"
+                                   className="choose-img"
+                                   onClick={chooseBackGroundOne}
+                                   onKeyUp={chooseBackGroundOne}
+                              />
+                              <img src="https://static6.depositphotos.com/1003369/659/i/600/depositphotos_6591667-stock-photo-close-up-of-beautiful-womanish.jpg"
+                                   alt="choose-img"
+                                   className="choose-img"
+                                   onClick={chooseBackGroundTwo}
+                                   onKeyUp={chooseBackGroundTwo}
+                              />
+                              <img src="https://www.canr.msu.edu/contentAsset/image/9c8f1a21-90e3-486d-9ca0-dd4a7b4b439d/fileAsset/filter/Resize,Jpeg/resize_w/750/jpeg_q/80"
+                                   alt="choose-img"
+                                   className="choose-img"
+                                   onClick={chooseBackGroundThree}
+                                   onKeyUp={chooseBackGroundThree}
+                              />
+                              <img src={backgroundMain}
+                                   alt="choose-img"
+                                   className="choose-img"
+                                   onClick={chooseBackGroundFour}
+                                   onKeyUp={chooseBackGroundFour}
+                              />
+                              <FontAwesomeIcon icon={faClose}
+                                               style={{cursor: 'pointer'}}
+                                               onClick={hideBackgrounds}
+                                               onKeyUp={hideBackgrounds}
+                              />
+                            </div>
+                        )
+                    }
                     <FontAwesomeIcon icon={faUserGroup} onClick={toggleGroupContent} onKeyUp={toggleGroupContent} style={{ marginTop: '10px', marginLeft: '300px' }} />
                   </div>
                   {
