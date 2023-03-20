@@ -2,7 +2,17 @@ import React, { useEffect, useState } from 'react';
 import './ChannelPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
-  addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -23,6 +33,9 @@ import avatar from '../images/create-group-page/group.png';
 import back from '../images/back.png';
 import ImageComponent from '../image-component/ImageComponent';
 import { db, storage } from '../firebase';
+import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
+import pinMessage from '../images/my-contacts-page/pin.svg';
+import Popup from '../popup-page/Popup';
 
 // eslint-disable-next-line max-len
 function ChannelPage({
@@ -53,6 +66,10 @@ function ChannelPage({
   const [replySendInputVisible, setReplySendInputVisible] = useState(false);
   const [channelContactsVisible, setChannelContactsVisible] = useState(false);
   const [channelMessagesVisible, setChannelMessagesVisible] = useState(true);
+  const [pinnedMessage, setPinnedMessage] = useState([]);
+  const [popupMessage, setPopupMessage] = useState('');
+  const [popupVisible, setPopupVisible] = useState(false);
+  const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
 
   const sentMessagesBackground = {
     background: '#FAEBD7',
@@ -128,6 +145,18 @@ function ChannelPage({
     };
     getMessages();
   }, [currentAuth]);
+  useEffect(() => {
+    const getPinnedMessages = async () => {
+      const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    };
+    getPinnedMessages();
+  }, [currentAuth]);
+
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
@@ -213,6 +242,7 @@ function ChannelPage({
         replyImg: replyImage || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -248,6 +278,7 @@ function ChannelPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -282,6 +313,7 @@ function ChannelPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -316,6 +348,7 @@ function ChannelPage({
         reply: replyText || '',
         replyVid: replyVideo || '',
         replyFile: replyFile || '',
+        pin: 0,
       }, { merge: true });
       const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
       const querySnapshot = await getDocs(q);
@@ -376,6 +409,206 @@ function ChannelPage({
       const data = await getDocs(collection(db, `channels/${channelId}/messages`));
       setMessages(data.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
     }
+  };
+  const addMessageToPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        text: text,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addImageToPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        attachments: attachments,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addFileToPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        file: file,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const addVideoToPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    if (pinnedMessage.length === 0) {
+      const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+      await setDoc(messagesRef, {
+        video: video,
+        userId,
+        userName: myName,
+        created: serverTimestamp(),
+        reply: replyText || '',
+        replyImg: replyImage || '',
+        replyVid: replyVideo || '',
+        replyFile: replyFile || '',
+        pin: 1,
+      }, { merge: true });
+      const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(() => {
+        // eslint-disable-next-line no-shadow
+        setPinnedMessage(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      });
+    } else {
+      setPopupVisible(true);
+      setPopupMessage('You can pin only one message');
+      setTimeout(() => {
+        setPopupVisible(false);
+      }, 2000);
+    }
+  }
+  const removeMessageFromPin = async (id, text) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      text: text,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeImageFromPin = async (id, attachments) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      attachments: attachments,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeVideoFromPin = async (id, video) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      video: video,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
+  };
+  const removeFileFromPin = async (id, file) => {
+    const auth = getAuth();
+    const userId = auth.currentUser.uid;
+    const messagesRef = doc(db, `groups/${channelId}/messages/${id}`);
+    await setDoc(messagesRef, {
+      file: file,
+      userId,
+      userName: myName,
+      created: serverTimestamp(),
+      reply: replyText || '',
+      replyImg: replyImage || '',
+      replyVid: replyVideo || '',
+      replyFile: replyFile || '',
+      pin: 0,
+    }, { merge: true });
+    setPinnedMessageVisible(false);
+    setTimeout(() => {
+      window.location.replace('/contacts');
+    }, 1000);
   };
 
   return (
@@ -441,6 +674,79 @@ function ChannelPage({
                             && (
                             <div>
                               {
+                                  pinnedMessageVisible && (
+                                      <div>
+                                        {
+                                          pinnedMessage.map((message) => (
+                                              <div key={message.id} className="pinned-message-wrapper">
+                                                {
+                                                    message.text && (
+                                                        <div>
+                                                          <div className="pinned-message-text">{message.text}</div>
+                                                          <img src={unpinMessage}
+                                                               alt="unpin-message"
+                                                               className="unpin-message"
+                                                               onClick={() => removeMessageFromPin(message.id, message.text)}
+                                                          />
+                                                        </div>
+                                                    )
+                                                }
+                                                {
+                                                    message.attachments && (
+                                                        <div>
+                                                          <img className="pinned-image" src={message.attachments} alt="mesImage"/>
+                                                          <img src={unpinMessage}
+                                                               alt="unpin-message"
+                                                               className="unpin-message"
+                                                               onClick={() => removeImageFromPin(message.id, message.attachments)}
+                                                          />
+                                                        </div>
+                                                    )
+                                                }
+                                                {
+                                                    message.file && (
+                                                        <div className="file-wrapper">
+                                                          <img
+                                                              src={docFlat}
+                                                              alt="doc"
+                                                              style={{
+                                                                width: '30px', height: '30px', marginLeft: '10px', marginRight: '10px',
+                                                              }}
+                                                          />
+                                                          {/* eslint-disable-next-line max-len */}
+                                                          <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(message.file)} />
+                                                          <img src={unpinMessage}
+                                                               alt="unpin-message"
+                                                               className="unpin-message"
+                                                               onClick={() => removeFileFromPin(message.id, message.file)}
+                                                          />
+                                                        </div>
+                                                    )
+                                                }
+                                                {
+                                                    message.video && (
+                                                        <div>
+                                                          <video
+                                                              style={messageVideoStyles}
+                                                              src={message.video}
+                                                              autoPlay={message.video}
+                                                              controls
+                                                          />
+                                                          <img src={unpinMessage}
+                                                               alt="unpin-message"
+                                                               className="unpin-message"
+                                                               onClick={() => removeVideoFromPin(message.id, message.video)}
+                                                          />
+                                                        </div>
+                                                    )
+                                                }
+                                              </div>
+                                          ))
+                                        }
+                                      </div>
+                                  )
+                              }
+                              {
                                   adminName === myName && (
                                       <FontAwesomeIcon
                                           icon={faTrash}
@@ -495,13 +801,26 @@ function ChannelPage({
                                               />
                                           ) : null
                                         }
-                                        <div className="message-text">{mes.text}</div>
                                         <div className="message-user-name">{mes.userName}</div>
-                                        <div
-                                            className="message-time"
-                                        >
-                                          {moment(mes.created.toDate()).calendar()}
-                                        </div>
+                                        {
+                                          mes.text && (
+                                                <div>
+                                                  <div className="message-text">{mes.text}</div>
+                                                  <div
+                                                      className="message-time"
+                                                  >
+                                                    {moment(mes.created.toDate()).calendar()}
+                                                  </div>
+                                                  {
+                                                    adminName === myName && (
+                                                          <div className="message-close">
+                                                            <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addMessageToPin(mes.id, mes.text)} />
+                                                          </div>
+                                                      )
+                                                  }
+                                                </div>
+                                            )
+                                        }
                                         {
                                             adminName === myName && (
                                                 // eslint-disable-next-line max-len
@@ -514,20 +833,28 @@ function ChannelPage({
                                                 </div>
                                             )
                                         }
-
                                         {
                                           // eslint-disable-next-line max-len
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                           mes.attachments ? (
-                                              <button
-                                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                  onClick={() => showImage(mes.id)}
-                                                  type="button"
-                                              >
-                                                {/* eslint-disable-next-line max-len */}
-                                                {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                                                <img style={messageImageStyles} src={mes.attachments} alt="image" />
-                                              </button>
+                                                  <div>
+                                                    <button
+                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                        onClick={() => showImage(mes.id)}
+                                                        type="button"
+                                                    >
+                                                      {/* eslint-disable-next-line max-len */}
+                                                      {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
+                                                      <img style={messageImageStyles} src={mes.attachments} alt="image" />
+                                                    </button>
+                                                    {
+                                                      adminName === myName && (
+                                                            <div className="message-close">
+                                                              <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
+                                                            </div>
+                                                        )
+                                                    }
+                                                  </div>
                                           ) : null
                                         }
                                         {
@@ -550,27 +877,42 @@ function ChannelPage({
                                                     icon={faDownload}
                                                     onClick={() => downloadFile(mes.file)}
                                                 />
+                                                {
+                                                  adminName === myName && (
+                                                        <div className="message-close">
+                                                          <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addFileToPin(mes.id, mes.file)} />
+                                                        </div>
+                                                    )
+                                                }
                                               </div>
                                           ) : null
                                         }
-
                                         {
                                           // eslint-disable-next-line max-len
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                           mes.video ? (
-                                              <button
-                                                  style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
-                                                  type="button"
-                                              >
-                                                {/* eslint-disable-next-line max-len */}
-                                                { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */}
-                                                <video
-                                                    style={messageVideoStyles}
-                                                    src={mes.video}
-                                                    autoPlay={mes.video}
-                                                    controls
-                                                />
-                                              </button>
+                                                  <div>
+                                                    <button
+                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                        type="button"
+                                                    >
+                                                      {/* eslint-disable-next-line max-len */}
+                                                      { /* eslint-disable-next-line jsx-a11y/media-has-caption,max-len */}
+                                                      <video
+                                                          style={messageVideoStyles}
+                                                          src={mes.video}
+                                                          autoPlay={mes.video}
+                                                          controls
+                                                      />
+                                                    </button>
+                                                    {
+                                                      adminName === myName && (
+                                                            <div className="message-close">
+                                                              <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
+                                                            </div>
+                                                        )
+                                                    }
+                                                  </div>
                                           ) : null
                                         }
                                       </div>
@@ -641,7 +983,6 @@ function ChannelPage({
                                             </div>
                                             )
                                         }
-
                                     <div className="reply-input">
                                       <input
                                         type="text"
@@ -661,7 +1002,6 @@ function ChannelPage({
                                                       </button>
                                                     ) : null
                                                 }
-
                                 </div>
                                 )
                                     }
@@ -755,6 +1095,9 @@ function ChannelPage({
                             </div>
                             )
                         }
+                  {
+                      popupVisible && <Popup text={popupMessage} />
+                  }
                 </div>
                 )
             }

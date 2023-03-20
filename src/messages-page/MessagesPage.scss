@@ -68,8 +68,15 @@
 			position: absolute;
 			right: 8px;
 			top: 5px;
-			font-size: 12px;
 			cursor: pointer;
+		}
+		.pin-message {
+			position: absolute;
+			right: 20px;
+			top: 2px;
+			cursor: pointer;
+			width: 12px;
+			height: 12px;
 		}
 
 	}
@@ -162,4 +169,35 @@
 	background-color: #039be5;
 	position: absolute;
 	z-index: 3;
+}
+.pinned-message-wrapper {
+	min-height: 30px;
+	width: 360px;
+	overflow: auto;
+	background: var(--main-white-color);
+	border: 2px deeppink solid;
+	border-radius: 10px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	position: relative;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	.pinned-message-text {
+		margin-left: 10px;
+		color: var(--main-font-color);
+	}
+	.pinned-image {
+		width: 20px;
+		height: 20px;
+		margin-left: 10px;
+	}
+	.unpin-message {
+		width: 15px;
+		height: 15px;
+		position: absolute;
+		top: 2px;
+		right: 5px;
+		cursor: pointer;
+	}
 }
