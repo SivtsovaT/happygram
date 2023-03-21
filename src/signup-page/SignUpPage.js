@@ -55,12 +55,16 @@ function SignUpPage() {
     } else {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userRef = doc(db, `users/${userCredential.user.uid}`);
-      await setDoc(userRef, { displayName: name, email });
+      await setDoc(userRef, {
+        displayName: name,
+        email,
+        background: 'https://bogatyr.club/uploads/posts/2021-11/thumbs/1636931398_64-bogatyr-club-p-fon-gradient-svetlii-64.png',
+      });
       setPopupVisible(true);
       setPopupMessage('Account has been created');
       setTimeout(() => {
         setPopupVisible(false);
-      }, 2000);
+      }, 3000);
       setTimeout(() => {
         window.location.replace('/search');
       }, 1000);

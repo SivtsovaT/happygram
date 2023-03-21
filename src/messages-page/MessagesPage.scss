@@ -201,3 +201,44 @@
 		cursor: pointer;
 	}
 }
+.button-back {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 74px;
+	height: 40px;
+	background: var(--main-red-color);
+	font-size: 9px;
+	font-weight: bold;
+	color: var(--main-white-color);
+	text-transform: uppercase;
+	border: none;
+	border-radius: 20px;
+	cursor: pointer;
+	&:hover {
+		box-shadow: 7px -7px 17px var(--dark-red-color);
+		border: none;
+	}
+}
+.choose-back-wrapper {
+	width: 200px;
+	height: 50px;
+	border: 2px deeppink solid;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	background-color: var(--main-white-color);
+	position: absolute;
+	top: 10px;
+	.choose-img {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			border: 2px var(--main-font-color) solid;
+		&:hover {
+			width: 40px;
+			height: 40px;
+		}
+	}
+}
