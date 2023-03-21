@@ -111,12 +111,13 @@ function SearchPage() {
     );
   }, [searchValue, users]);
 
-  const addUserToContacts = async (id, displayName, email) => {
+  const addUserToContacts = async (id, displayName, email, userAvatar) => {
     const contactRef = doc(db, `users/${currentAuth}/contacts/${id}`);
     await setDoc(contactRef, {
       displayName,
       email,
       id,
+      userAvatar,
       blocked: 0,
       icon: 1,
       pin: 0,
@@ -172,7 +173,11 @@ function SearchPage() {
         {
           filteredUsers.map((filteredUser) => (
             <div key={filteredUser.id} className="user-wrapper">
-              <img className="user-avatar" src={avatar} alt="avatar" />
+              {
+                filteredUser.userAvatar
+                  ? <img className="user-avatar" src={filteredUser.userAvatar} alt="avatar" />
+                  : <img className="user-avatar" src={avatar} alt="avatar" />
+              }
               <div className="user-info">
                 <div className="project-main">{filteredUser.displayName}</div>
                 <div className="user-email">{filteredUser.email}</div>
@@ -180,7 +185,7 @@ function SearchPage() {
               {
                   filteredUser.displayName === myName ? <div className="project-main">(you)</div>
                     : (
-                      <button type="button" className="btn btn-28" style={{ marginLeft: '80px' }} onClick={() => addUserToContacts(filteredUser.id, filteredUser.displayName, filteredUser.email)}>
+                      <button type="button" className="btn btn-28" style={{ marginLeft: '80px' }} onClick={() => addUserToContacts(filteredUser.id, filteredUser.displayName, filteredUser.email, filteredUser.userAvatar)}>
                         <FontAwesomeIcon icon={faUserPlus} />
                       </button>
                     )
@@ -191,7 +196,11 @@ function SearchPage() {
         {
           filteredChannels.map((filteredChannel) => (
             <div key={filteredChannel.id} className="user-wrapper">
-              <img className="user-avatar" src={avatar} alt="avatar" />
+              {
+                filteredChannel.channelAvatar
+                  ? <img className="user-avatar" src={filteredChannel.channelAvatar} alt="avatar" />
+                  : <img className="user-avatar" src={avatar} alt="avatar" />
+              }
               <div className="user-info">
                 <div className="project-main">{filteredChannel.channelName}</div>
               </div>
