@@ -13,6 +13,8 @@ import {
   serverTimestamp,
   setDoc,
   where,
+  updateDoc,
+  arrayUnion,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,7 +23,7 @@ import {
   faArrowTurnRight,
   faClose,
   faDownload,
-  faFile,
+  faFile, faHeart,
   faImage, faPaperclip, faTrash,
   faUserGroup,
   faVideo,
@@ -37,6 +39,8 @@ import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
 import pinMessage from '../images/my-contacts-page/pin.svg';
 import Popup from '../popup-page/Popup';
 import backgroundMain from '../images/new-back.jpeg';
+import likeIcon from '../images/like-icon.svg';
+import ChannelMessageLikesPage from '../channel-message-likes-page/ChannelMessageLikesPage';
 
 // eslint-disable-next-line max-len
 function ChannelPage({
@@ -73,6 +77,9 @@ function ChannelPage({
   const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
   const [chooseButtonVisible, setChooseButtonVisible] = useState(true);
   const [backgroundsVisible, setBackgroundsVisible] = useState(false);
+  // const [likes] = useState([]);
+  const [mesLikes, setMesLikes] = useState([]);
+  const [likesPageVisible, setLikesPageVisible] = useState(false);
 
   const sentMessagesBackground = {
     background: '#FAEBD7',
@@ -125,6 +132,7 @@ function ChannelPage({
   }, [currentAuth]);
   const myName = userData.displayName;
   const myBack = userData.background;
+  const myAvatar = userData.userAvatar;
 
   const stylesMessages = {
     backgroundImage: `url(${myBack})`,
@@ -154,6 +162,7 @@ function ChannelPage({
     };
     getMessages();
   }, [currentAuth]);
+
   useEffect(() => {
     const getPinnedMessages = async () => {
       const q = query(collection(db, `groups/${channelId}/messages`), where('pin', '==', 1));
@@ -165,7 +174,6 @@ function ChannelPage({
     };
     getPinnedMessages();
   }, [currentAuth]);
-
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
@@ -679,6 +687,35 @@ function ChannelPage({
     const data = docSnap.data();
     setUserData(data);
   };
+  const addLike = async (id) => {
+    const auth = getAuth();
+    const userLikedId = auth.currentUser.uid;
+    const likesRef = doc(db, `channels/${channelId}/messages/${id}`);
+    await updateDoc(likesRef, {
+      likes: arrayUnion({
+        userLikedId: userLikedId,
+        userAvatar: myAvatar || '',
+        userName: myName,
+      }),
+    }, {merge: true});
+    const q = query(collection(db, `channels/${channelId}/messages`), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  }
+  const showLikes = async (id) => {
+    const likeRef = doc(db, 'channels', channelId, 'messages', id);
+    const docSnap = await getDoc(likeRef);
+    const data = docSnap.data().likes;
+    await setMesLikes(data);
+    setLikesPageVisible(true);
+  }
+  const hideLikesList = () => {
+    setChannelMessagesVisible(true);
+    setLikesPageVisible(false);
+  }
   return (
     <>
       {
@@ -913,7 +950,23 @@ function ChannelPage({
                                         {
                                           mes.text && (
                                                 <div>
+                                                  <img src={likeIcon}
+                                                       alt="like-icon"
+                                                       className="like-icon"
+                                                       onClick={() => addLike(mes.id)}
+                                                       onKeyUp={() => addLike(mes.id)}
+                                                  />
                                                   <div className="message-text">{mes.text}</div>
+                                                  {
+                                                    mes.likes
+                                                      ? <FontAwesomeIcon
+                                                            icon={faHeart}
+                                                            onClick={() => showLikes(mes.id)}
+                                                            onKeyUp={() => showLikes(mes.id)}
+                                                            className="favourites-icon"
+                                                        />
+                                                      : null
+                                                  }
                                                   <div
                                                       className="message-time"
                                                   >
@@ -946,8 +999,24 @@ function ChannelPage({
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                           mes.attachments ? (
                                                   <div>
+                                                    <img src={likeIcon}
+                                                         alt="like-icon"
+                                                         className="like-icon"
+                                                         onClick={() => addLike(mes.id)}
+                                                         onKeyUp={() => addLike(mes.id)}
+                                                    />
+                                                    {
+                                                      mes.likes
+                                                          ? <FontAwesomeIcon
+                                                              icon={faHeart}
+                                                              onClick={() => showLikes(mes.id)}
+                                                              onKeyUp={() => showLikes(mes.id)}
+                                                              className="favourites-icon"
+                                                          />
+                                                          : null
+                                                    }
                                                     <button
-                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '5px' }}
                                                         onClick={() => showImage(mes.id)}
                                                         type="button"
                                                     >
@@ -955,6 +1024,11 @@ function ChannelPage({
                                                       {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
                                                       <img style={messageImageStyles} src={mes.attachments} alt="image" />
                                                     </button>
+                                                    <div
+                                                        className="message-time"
+                                                    >
+                                                      {moment(mes.created.toDate()).calendar()}
+                                                    </div>
                                                     {
                                                       adminName === myName && (
                                                             <div className="message-close">
@@ -970,6 +1044,22 @@ function ChannelPage({
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                           mes.file ? (
                                               <div className="file-wrapper">
+                                                <img src={likeIcon}
+                                                     alt="like-icon"
+                                                     className="like-icon"
+                                                     onClick={() => addLike(mes.id)}
+                                                     onKeyUp={() => addLike(mes.id)}
+                                                />
+                                                {
+                                                  mes.likes
+                                                      ? <FontAwesomeIcon
+                                                          icon={faHeart}
+                                                          onClick={() => showLikes(mes.id)}
+                                                          onKeyUp={() => showLikes(mes.id)}
+                                                          className="favourites-icon"
+                                                      />
+                                                      : null
+                                                }
                                                 <img
                                                     src={docFlat}
                                                     alt="doc"
@@ -978,8 +1068,14 @@ function ChannelPage({
                                                       height: '30px',
                                                       marginLeft: '10px',
                                                       marginRight: '10px',
+                                                      marginBottom: '15px',
                                                     }}
                                                 />
+                                                <div
+                                                    className="message-time"
+                                                >
+                                                  {moment(mes.created.toDate()).calendar()}
+                                                </div>
                                                 {/* eslint-disable-next-line max-len */}
                                                 <FontAwesomeIcon
                                                     icon={faDownload}
@@ -1000,8 +1096,24 @@ function ChannelPage({
                                           // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                           mes.video ? (
                                                   <div>
+                                                    <img src={likeIcon}
+                                                         alt="like-icon"
+                                                         className="like-icon"
+                                                         onClick={() => addLike(mes.id)}
+                                                         onKeyUp={() => addLike(mes.id)}
+                                                    />
+                                                    {
+                                                      mes.likes
+                                                          ? <FontAwesomeIcon
+                                                              icon={faHeart}
+                                                              onClick={() => showLikes(mes.id)}
+                                                              onKeyUp={() => showLikes(mes.id)}
+                                                              className="favourites-icon"
+                                                          />
+                                                          : null
+                                                    }
                                                     <button
-                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                        style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '10px' }}
                                                         type="button"
                                                     >
                                                       {/* eslint-disable-next-line max-len */}
@@ -1013,6 +1125,11 @@ function ChannelPage({
                                                           controls
                                                       />
                                                     </button>
+                                                    <div
+                                                        className="message-time"
+                                                    >
+                                                      {moment(mes.created.toDate()).calendar()}
+                                                    </div>
                                                     {
                                                       adminName === myName && (
                                                             <div className="message-close">
@@ -1203,9 +1320,23 @@ function ChannelPage({
                             </div>
                             )
                         }
+                        {/*<div>*/}
+                        {/*  {*/}
+                        {/*    likes.map((like) => (*/}
+                        {/*        <div key={like.id}>*/}
+                        {/*          <div>{like.userId}</div>*/}
+                        {/*        </div>*/}
+                        {/*    ))*/}
+                        {/*  }*/}
+                        {/*</div>*/}
+
                   {
                       popupVisible && <Popup text={popupMessage} />
                   }
+                  {
+                      likesPageVisible && <ChannelMessageLikesPage messageLikes={mesLikes} hideLikesList={hideLikesList} />
+                  }
+
                 </div>
                 )
             }
