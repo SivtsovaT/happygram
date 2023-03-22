@@ -111,7 +111,7 @@ function CreateGroupPage() {
 
   return (
     <div className="content">
-      <Link to="/contacts" className="link-panel">
+      <Link to="/profile" className="link-panel">
         <img src={back} alt="back" />
       </Link>
       <div className="signup-wrapper" style={{ marginTop: '200px' }}>

@@ -1,0 +1,116 @@
+.profile-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	.avatar-wrapper {
+		display: flex;
+		justify-content: center;
+		position: relative;
+		.profile-image {
+			position: absolute;
+			left: 35px;
+		}
+	}
+	.profile-user-info {
+		display: flex;
+		flex-direction: column;
+		margin-top: 65px;
+		justify-content: center;
+		align-items: center;
+		.user-email {
+			font-size: 13px;
+			color: var(--main-font-color);		}
+	}
+	.profile-main {
+		width: 300px;
+		height: 300px;
+		border-radius: 15px;
+		.profile-block {
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+			width: 300px;
+			height: 70px;
+			border: 1px var(--main-font-color) solid;
+			border-radius: 20px;
+			margin-top: 5px;
+			background: url("../images/new-back.jpeg") center center/cover no-repeat;
+			&:hover {
+				height: 75px;
+				border: 2px var(--main-font-color) solid;
+				border-radius: 20px;
+				background: url("../images/my-profile-page/gradient.jpg") center center/cover no-repeat;
+			}
+			.profile-create {
+				display: flex;
+				justify-content: flex-start;
+				align-items: center;
+				.my-groups-wrapper {
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					width: 100px;
+					height: 30px;
+					border: 2px deeppink solid;
+					border-radius: 10px;
+					padding-right: 5px;
+					&:hover {
+						box-shadow: 7px -7px 17px var(--dark-red-color);
+					}
+					.my-groups-title {
+						font-size: 12px;
+						color: var(--main-font-color);
+						font-weight: 700;
+						margin-left: 10px;
+					}
+				}
+			}
+			.profile-link {
+				text-decoration: none;
+				margin-left: 15px;
+				color: var(--main-font-color);
+				font-size: 13px;
+				font-weight: 900;
+			}
+		}
+
+	}
+}
+.fileload-group-profile {
+	display: flex;
+	justify-content: flex-start;
+	width: 150px;
+	height: 30px;
+	margin-top: 10px;
+
+	.file-load-block {
+		position: relative;
+
+		.input-label {
+			width: 30px;
+			position: absolute;
+			left: 106px;
+			top: 55px;
+		}
+	}
+	.input-btn {
+		margin-left: 35px;
+		height: 30px;
+		width: 80px;
+		background-color: #E0FFFF;
+		border: none;
+		cursor: pointer;
+		transition: 0.5s all;
+		font-size: 12px;
+		font-weight: 700;
+		line-height: 32px;
+		text-align: center;
+		border-radius: 20px;
+		color: var(--main-font-color);
+		&:hover {
+			box-shadow: 7px -7px 17px var(--dark-red-color);
+			border: none;
+		}
+	}
+
+}

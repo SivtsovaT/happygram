@@ -12,6 +12,7 @@ import CreateGroupPage from './create-group-page/CreateGroupPage';
 import GroupsListPage from './groups-list-page/GroupsListPage';
 import CreateChannelPage from './create-channel-page/CreateChannelPage';
 import ChannelsListPage from './channels-list-page/ChannelsListPage';
+import MyProfilePage from './my-profile-page/MyProfilePage';
 
 function App() {
   return (
@@ -27,7 +28,7 @@ function App() {
       <Route path="groupslist" element={<GroupsListPage />} />
       <Route path="channel" element={<CreateChannelPage />} />
       <Route path="channelslist" element={<ChannelsListPage />} />
-
+      <Route path="profile" element={<MyProfilePage />} />
     </Routes>
   );
 }

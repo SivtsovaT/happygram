@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
 import { Link } from 'react-router-dom';
-import { faUserGroup, faUserLock } from '@fortawesome/free-solid-svg-icons';
+import { faUserLock } from '@fortawesome/free-solid-svg-icons';
 import avatar from '../images/search-page/avatar.jpg';
 import unlockIcon from '../images/my-contacts-page/unlock-icon.svg';
 import youBlocked from '../images/my-contacts-page/you-blocked.jpg';
@@ -92,6 +92,7 @@ function MyContactsPage() {
   }, []);
   const myName = userData.displayName;
   const myEmail = userData.email;
+  const myAvatar = userData.userAvatar;
 
   useEffect(() => {
     if (!currentAuth) {
@@ -403,6 +404,9 @@ function MyContactsPage() {
     }, { merge: true });
     window.location.replace('/contacts');
   };
+  const showProfile = () => {
+    window.location.replace('/profile');
+  };
 
   return (
     <>
@@ -446,7 +450,7 @@ function MyContactsPage() {
         <div className="users-header">
           <div className="password-wrapper">
             <input
-              style={{ height: '36px', width: '100px' }}
+              style={{ height: '36px', width: '70px' }}
               type="text"
               className="input-log"
               value={searchValue}
@@ -454,42 +458,43 @@ function MyContactsPage() {
             />
             <FontAwesomeIcon icon={faMagnifyingGlass} style={{ marginLeft: '-30px' }} />
           </div>
-          <div className="project-main">
+          <div className="project-main" style={{ marginLeft: '10px' }}>
             Welcome,
             {' '}
             {userData.displayName}
             !
           </div>
+          {
+            myAvatar
+              ? (
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                <img
+                  src={myAvatar}
+                  alt="userAvatar"
+                  className="profile-image"
+                  style={{ width: '40px', height: '40px', cursor: 'pointer' }}
+                  onClick={showProfile}
+                  onKeyUp={showProfile}
+                />
+              )
+              : (
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                <img
+                  className="profile-image"
+                  src={avatar}
+                  alt="userAvatar"
+                  style={{ width: '40px', height: '40px', cursor: 'pointer' }}
+                  onClick={showProfile}
+                  onKeyUp={showProfile}
+                />
+              )
+          }
           <FontAwesomeIcon onClick={logout} style={{ width: '30px', height: '30px' }} icon={faRightFromBracket} />
         </div>
         <div className="contacts-panel">
           <Link to="/search" className="link-left">
             <img src={back} alt="back" />
           </Link>
-          <div className="my-groups-wrapper">
-            <div className="my-groups-title">My groups</div>
-            <Link to="/groupslist">
-              <FontAwesomeIcon icon={faUserGroup} />
-            </Link>
-          </div>
-          <div className="my-groups-wrapper">
-            <div className="my-groups-title">My channels</div>
-            <Link to="/channelslist">
-              <FontAwesomeIcon icon={faUserGroup} />
-            </Link>
-          </div>
-          <div className="my-groups-wrapper">
-            <div className="my-groups-title">Create group</div>
-            <Link to="/group">
-              <FontAwesomeIcon icon={faUserGroup} />
-            </Link>
-          </div>
-          <div className="my-groups-wrapper">
-            <div className="my-groups-title">Create channel</div>
-            <Link to="/channel">
-              <FontAwesomeIcon icon={faUserGroup} />
-            </Link>
-          </div>
         </div>
         <div className="users-list" style={{ height: '600px' }}>
           {
@@ -537,7 +542,11 @@ function MyContactsPage() {
                                   ? <img className="user-avatar" src={unknown} alt="unknown" />
                                   : (
                                     <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={() => showContact(pinnedContact.id)}>
-                                      <img className="user-avatar" src={avatar} alt="avatar" />
+                                      {
+                                        pinnedContact.userAvatar
+                                          ? <img className="user-avatar" src={pinnedContact.userAvatar} alt="avatar" />
+                                          : <img className="user-avatar" src={avatar} alt="avatar" />
+                                      }
                                     </button>
                                   )
                               }
@@ -788,7 +797,11 @@ function MyContactsPage() {
                                   ? <img className="user-avatar" src={unknown} alt="unknown" />
                                   : (
                                     <button style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }} type="button" onClick={() => showContact(unpinnedContact.id)}>
-                                      <img className="user-avatar" src={avatar} alt="avatar" />
+                                      {
+                                        unpinnedContact.userAvatar
+                                          ? <img className="user-avatar" src={unpinnedContact.userAvatar} alt="avatar" />
+                                          : <img className="user-avatar" src={avatar} alt="avatar" />
+                                      }
                                     </button>
                                   )
                               }

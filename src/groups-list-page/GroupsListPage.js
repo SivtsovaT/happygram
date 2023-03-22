@@ -152,7 +152,7 @@ function GroupsListPage() {
             !
           </div>
         </div>
-        <Link to="/contacts" className="link-panel">
+        <Link to="/profile" className="link-panel">
           <img src={back} alt="back" />
         </Link>
         <div className="users-list">

@@ -108,7 +108,7 @@ function CreateChannelPage() {
 
   return (
     <div className="content">
-      <Link to="/contacts" className="link-panel">
+      <Link to="/profile" className="link-panel">
         <img src={back} alt="back" />
       </Link>
       <div className="signup-wrapper" style={{ marginTop: '200px' }}>
@@ -117,7 +117,7 @@ function CreateChannelPage() {
                 downloadImageVisible ? <img className="group-image" src={url} alt="group-image" />
                 // eslint-disable-next-line jsx-a11y/img-redundant-alt
                   : <img className="group-image" src={group} alt="group-image" />
-            }
+        }
 
         <div className="fileload-group">
           <div className="file-load-block">
@@ -129,7 +129,7 @@ function CreateChannelPage() {
           </div>
           {
                     downloadButtonVisible && <button className="input-btn" type="button" onClick={handleSubmit}>Download</button>
-                }
+          }
         </div>
         <input
           className="input-log input-group"
