@@ -3,13 +3,24 @@ import './GroupPage.scss';
 import { getAuth } from 'firebase/auth';
 import {
   addDoc,
-  collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+  updateDoc,
+  arrayUnion,
 } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowTurnRight, faClose,
   faDownload,
-  faFile, faImage, faPaperclip, faTrash, faUserGroup, faVideo,
+  faFile, faHeart, faImage, faPaperclip, faTrash, faUserGroup, faVideo,
 } from '@fortawesome/free-solid-svg-icons';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons/faPaperPlane';
 import { saveAs } from 'file-saver';
@@ -25,6 +36,8 @@ import unpinMessage from '../images/my-contacts-page/unpin-icon.jpg';
 import pinMessage from '../images/my-contacts-page/pin.svg';
 import Popup from '../popup-page/Popup';
 import backgroundMain from '../images/new-back.jpeg';
+import likeIcon from '../images/like-icon.svg';
+import GroupMessageLikePage from '../group-message-likes-page/GroupMessageLikePage';
 
 function GroupPage({
   groupName, groupId, groupAvatar, showContactsList, adminEmail, adminName,
@@ -59,6 +72,9 @@ function GroupPage({
   const [pinnedMessageVisible, setPinnedMessageVisible] = useState(true);
   const [chooseButtonVisible, setChooseButtonVisible] = useState(true);
   const [backgroundsVisible, setBackgroundsVisible] = useState(false);
+  // const [likes] = useState([]);
+  const [mesLikes, setMesLikes] = useState([]);
+  const [likesPageVisible, setLikesPageVisible] = useState(false);
 
   const sentStyles = {
     display: 'flex',
@@ -125,6 +141,7 @@ function GroupPage({
   }, [currentAuth]);
   const myName = userData.displayName;
   const myBack = userData.background;
+  const myAvatar = userData.userAvatar;
 
   const stylesMessages = {
     backgroundImage: `url(${myBack})`,
@@ -681,7 +698,36 @@ function GroupPage({
     const data = docSnap.data();
     setUserData(data);
   };
-  
+  const addLike = async (id) => {
+    const auth = getAuth();
+    const userLikedId = auth.currentUser.uid;
+    const likesRef = doc(db, `groups/${groupId}/messages/${id}`);
+    await updateDoc(likesRef, {
+      likes: arrayUnion({
+        userLikedId: userLikedId,
+        userAvatar: myAvatar || '',
+        userName: myName,
+      }),
+    }, {merge: true});
+    const q = query(collection(db, `groups/${groupId}/messages`), orderBy('created'));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(() => {
+      // eslint-disable-next-line no-shadow
+      setMessages(querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+    });
+  }
+  const showLikes = async (id) => {
+    const likeRef = doc(db, 'groups', groupId, 'messages', id);
+    const docSnap = await getDoc(likeRef);
+    const data = docSnap.data().likes;
+    await setMesLikes(data);
+    setLikesPageVisible(true);
+  }
+  const hideLikesList = () => {
+    setGroupMessagesVisible(true);
+    setLikesPageVisible(false);
+  }
+
   return (
     <>
       {
@@ -908,7 +954,23 @@ function GroupPage({
                                         {
                                           mes.text && (
                                                 <div>
+                                                  <img src={likeIcon}
+                                                       alt="like-icon"
+                                                       className="like-icon"
+                                                       onClick={() => addLike(mes.id)}
+                                                       onKeyUp={() => addLike(mes.id)}
+                                                  />
                                                   <div className="message-text">{mes.text}</div>
+                                                  {
+                                                    mes.likes
+                                                        ? <FontAwesomeIcon
+                                                            icon={faHeart}
+                                                        onClick={() => showLikes(mes.id)}
+                                                        onKeyUp={() => showLikes(mes.id)}
+                                                        className="favourites-icon"
+                                                        />
+                                                        : null
+                                                  }
                                                   <div
                                                       className="message-time"
                                                   >
@@ -933,8 +995,24 @@ function GroupPage({
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.attachments ? (
                                                       <div>
+                                                        <img src={likeIcon}
+                                                             alt="like-icon"
+                                                             className="like-icon"
+                                                             onClick={() => addLike(mes.id)}
+                                                             onKeyUp={() => addLike(mes.id)}
+                                                        />
+                                                        {
+                                                          mes.likes
+                                                              ? <FontAwesomeIcon
+                                                                  icon={faHeart}
+                                                                  onClick={() => showLikes(mes.id)}
+                                                                  onKeyUp={() => showLikes(mes.id)}
+                                                                  className="favourites-icon"
+                                                              />
+                                                              : null
+                                                        }
                                                         <button
-                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '5px' }}
                                                             onClick={() => showImage(mes.id)}
                                                             type="button"
                                                         >
@@ -942,6 +1020,11 @@ function GroupPage({
                                                           {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
                                                           <img style={messageImageStyles} src={mes.attachments} alt="image" />
                                                         </button>
+                                                        <div
+                                                            className="message-time"
+                                                        >
+                                                          {moment(mes.created.toDate()).calendar()}
+                                                        </div>
                                                         <div className="message-close">
                                                           <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
                                                         </div>
@@ -952,13 +1035,38 @@ function GroupPage({
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.file ? (
                                                 <div className="file-wrapper">
+                                                  <img src={likeIcon}
+                                                       alt="like-icon"
+                                                       className="like-icon"
+                                                       onClick={() => addLike(mes.id)}
+                                                       onKeyUp={() => addLike(mes.id)}
+                                                  />
+                                                  {
+                                                    mes.likes
+                                                        ? <FontAwesomeIcon
+                                                            icon={faHeart}
+                                                            onClick={() => showLikes(mes.id)}
+                                                            onKeyUp={() => showLikes(mes.id)}
+                                                            className="favourites-icon"
+                                                        />
+                                                        : null
+                                                  }
                                                   <img
                                                     src={docFlat}
                                                     alt="doc"
                                                     style={{
-                                                      width: '30px', height: '30px', marginLeft: '10px', marginRight: '10px',
+                                                      width: '30px',
+                                                      height: '30px',
+                                                      marginLeft: '10px',
+                                                      marginRight: '10px',
+                                                      marginBottom: '15px',
                                                     }}
                                                   />
+                                                  <div
+                                                      className="message-time"
+                                                  >
+                                                    {moment(mes.created.toDate()).calendar()}
+                                                  </div>
                                                   {/* eslint-disable-next-line max-len */}
                                                   <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
                                                   <div className="message-close">
@@ -971,8 +1079,24 @@ function GroupPage({
                                               // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                               mes.video ? (
                                                       <div>
+                                                        <img src={likeIcon}
+                                                             alt="like-icon"
+                                                             className="like-icon"
+                                                             onClick={() => addLike(mes.id)}
+                                                             onKeyUp={() => addLike(mes.id)}
+                                                        />
+                                                        {
+                                                          mes.likes
+                                                              ? <FontAwesomeIcon
+                                                                  icon={faHeart}
+                                                                  onClick={() => showLikes(mes.id)}
+                                                                  onKeyUp={() => showLikes(mes.id)}
+                                                                  className="favourites-icon"
+                                                              />
+                                                              : null
+                                                        }
                                                         <button
-                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                            style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '10px' }}
                                                             type="button"
                                                         >
                                                           {/* eslint-disable-next-line max-len */}
@@ -984,6 +1108,11 @@ function GroupPage({
                                                               controls
                                                           />
                                                         </button>
+                                                        <div
+                                                            className="message-time"
+                                                        >
+                                                          {moment(mes.created.toDate()).calendar()}
+                                                        </div>
                                                         <div className="message-close">
                                                           <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
                                                         </div>
@@ -1019,11 +1148,30 @@ function GroupPage({
                                                     />
                                                   ) : null
                                                 }
+                                          <div className="message-user-name">{mes.userName}</div>
+
                                           {
                                             mes.text && (
                                                   <div>
+                                                    <img src={likeIcon}
+                                                         alt="like-icon"
+                                                         className="like-icon"
+                                                         onClick={() => addLike(mes.id)}
+                                                         onKeyUp={() => addLike(mes.id)}
+                                                    />
                                                     <div className="message-text">{mes.text}</div>
                                                     <div className="message-user-name">{mes.userName}</div>
+                                                    {
+                                                      mes.likes
+                                                          ? <FontAwesomeIcon
+                                                              icon={faHeart}
+                                                          onClick={() => showLikes(mes.id)}
+                                                          onKeyUp={() => showLikes(mes.id)}
+                                                          className="favourites-icon"
+                                                          />
+                                                          : null
+                                                    }
+
                                                     <div
                                                         className="message-time"
                                                     >
@@ -1053,8 +1201,25 @@ function GroupPage({
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                                   mes.attachments ? (
                                                           <div>
+                                                            <img src={likeIcon}
+                                                                 alt="like-icon"
+                                                                 className="like-icon"
+                                                                 onClick={() => addLike(mes.id)}
+                                                                 onKeyUp={() => addLike(mes.id)}
+                                                            />
+                                                            {
+                                                              mes.likes
+                                                                  ? <FontAwesomeIcon
+                                                                      icon={faHeart}
+                                                                      onClick={() => showLikes(mes.id)}
+                                                                      onKeyUp={() => showLikes(mes.id)}
+                                                                      className="favourites-icon"
+                                                                  />
+                                                                  : null
+                                                            }
+
                                                             <button
-                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '5px' }}
                                                                 onClick={() => showImage(mes.id)}
                                                                 type="button"
                                                             >
@@ -1062,6 +1227,11 @@ function GroupPage({
                                                               {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
                                                               <img style={messageImageStyles} src={mes.attachments} alt="image" />
                                                             </button>
+                                                            <div
+                                                                className="message-time"
+                                                            >
+                                                              {moment(mes.created.toDate()).calendar()}
+                                                            </div>
                                                             <div className="message-close">
                                                               <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addImageToPin(mes.id, mes.attachments)} />
                                                             </div>
@@ -1074,7 +1244,37 @@ function GroupPage({
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                                   mes.file ? (
                                                     <div className="file-wrapper">
-                                                      <img src={docFlat} alt="doc" style={{ width: '30px', height: '30px', marginLeft: '10px' }} />
+                                                      <img src={likeIcon}
+                                                           alt="like-icon"
+                                                           className="like-icon"
+                                                           onClick={() => addLike(mes.id)}
+                                                           onKeyUp={() => addLike(mes.id)}
+                                                      />
+                                                      {
+                                                        mes.likes
+                                                            ? <FontAwesomeIcon
+                                                                icon={faHeart}
+                                                                onClick={() => showLikes(mes.id)}
+                                                                onKeyUp={() => showLikes(mes.id)}
+                                                                className="favourites-icon"
+                                                            />
+                                                            : null
+                                                      }
+                                                      <img src={docFlat}
+                                                           alt="doc"
+                                                           style={{
+                                                             width: '30px',
+                                                             height: '30px',
+                                                             marginLeft: '10px',
+                                                             marginRight: '10px',
+                                                             marginBottom: '15px',
+                                                      }}
+                                                      />
+                                                      <div
+                                                          className="message-time"
+                                                      >
+                                                        {moment(mes.created.toDate()).calendar()}
+                                                      </div>
                                                       {/* eslint-disable-next-line max-len */}
                                                       <FontAwesomeIcon icon={faDownload} onClick={() => downloadFile(mes.file)} />
                                                       <div className="message-close">
@@ -1089,8 +1289,25 @@ function GroupPage({
                                                   // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                                   mes.video ? (
                                                           <div>
+                                                            <img src={likeIcon}
+                                                                 alt="like-icon"
+                                                                 className="like-icon"
+                                                                 onClick={() => addLike(mes.id)}
+                                                                 onKeyUp={() => addLike(mes.id)}
+                                                            />
+                                                            {
+                                                              mes.likes
+                                                                  ? <FontAwesomeIcon
+                                                                      icon={faHeart}
+                                                                      onClick={() => showLikes(mes.id)}
+                                                                      onKeyUp={() => showLikes(mes.id)}
+                                                                      className="favourites-icon"
+                                                                  />
+                                                                  : null
+                                                            }
+
                                                             <button
-                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none' }}
+                                                                style={{ backgroundColor: 'rgba(28,28,28,0)', border: 'none', marginBottom: '10px' }}
                                                                 onClick={() => showImage(mes.id)}
                                                                 type="button"
                                                             >
@@ -1103,6 +1320,11 @@ function GroupPage({
                                                                   controls
                                                               />
                                                             </button>
+                                                            <div
+                                                                className="message-time"
+                                                            >
+                                                              {moment(mes.created.toDate()).calendar()}
+                                                            </div>
                                                             <div className="message-close">
                                                               <img src={pinMessage} alt="pin" className="pin-message" onClick={() => addVideoToPin(mes.id, mes.video)} />
                                                             </div>
@@ -1277,6 +1499,10 @@ function GroupPage({
           {
               popupVisible && <Popup text={popupMessage} />
           }
+          {
+              likesPageVisible && <GroupMessageLikePage messageLikes={mesLikes} hideLikesList={hideLikesList} />
+          }
+
         </div>
         )
       }
